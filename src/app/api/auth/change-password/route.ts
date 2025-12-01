@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../[...nextauth]/route";
+import { authOptions } from "@/lib/auth"; // UPDATED IMPORT
 import bcrypt from "bcrypt";
 
 export async function POST(req: Request) {
