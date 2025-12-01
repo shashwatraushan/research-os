@@ -29,6 +29,10 @@ model Project {
   field       String?
   color       String   @default("#5E6AD2")
   status      String   @default("active")
+  // --- NEW: Visibility Fields ---
+  isPublic    Boolean  @default(false)  // If true, anyone can view (Read-Only)
+  publishedAt DateTime?                 // Date it was made public
+  // ------------------------------
   ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -48,7 +52,12 @@ model Member {
   projectId String
   userId    String
   role      String
-
+  // --- NEW: Granular Permissions ---
+  canEditLit    Boolean @default(false)
+  canEditData   Boolean @default(false)
+  canEditExps   Boolean @default(false)
+  canManageTeam Boolean @default(false) // Can they invite others?
+  // --------------------------------
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

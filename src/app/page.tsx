@@ -870,7 +870,7 @@ const ProjectSelectionScreen = ({
 /**
  * SUB-COMPONENT: SIDEBAR (Updated)
  */
-const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout }) => {
+const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout, onOpenSettings }) => {
   const { theme, toggleTheme, isDarkMode } = useTheme();
   
   // UI State

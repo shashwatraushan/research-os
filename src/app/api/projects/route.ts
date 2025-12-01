@@ -25,19 +25,26 @@ export async function POST(req: Request) {
 
   const { title, description } = await req.json();
 
-  // 1. Get User ID
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  // 2. Create Project & Add User as Owner
   const project = await prisma.project.create({
     data: {
       title,
       description,
       ownerId: user.id,
-      color: "#5E6AD2", // Default color
+      color: "#5E6AD2",
       members: {
-        create: { userId: user.id, role: "OWNER" }
+        create: { 
+            userId: user.id, 
+            role: "OWNER",
+            // --- NEW: Grant Full Access to Creator ---
+            canEditLit: true,
+            canEditData: true,
+            canEditExps: true,
+            canManageTeam: true
+            // ---------------------------------------
+        }
       }
     }
   });
