@@ -10,7 +10,8 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { projectId, title, assigneeId, dueDate } = body;
+  // Extract new field
+  const { projectId, title, assigneeId, dueDate, sendReminder } = body; 
 
   const task = await prisma.task.create({
     data: {
@@ -19,15 +20,22 @@ export async function POST(req: Request) {
       status: "todo",
       assigneeId: assigneeId || undefined,
       dueDate: dueDate ? new Date(dueDate) : undefined,
+      sendReminder: sendReminder || false, // Save the preference
+      reminderSent: false
     }
   });
   return NextResponse.json(task);
 }
 
-// PATCH (Update Status OR Title)
+// PATCH (Update)
 export async function PATCH(req: Request) {
   const body = await req.json();
-  const { id, ...updates } = body; // Supports status AND title updates
+  const { id, ...updates } = body; 
+
+  // If user changes due date, reset the 'sent' flag so they get reminded again
+  if (updates.dueDate) {
+      updates.reminderSent = false;
+  }
 
   const task = await prisma.task.update({
     where: { id },

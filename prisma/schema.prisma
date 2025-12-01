@@ -64,7 +64,10 @@ model Task {
   assigneeId  String?
   dueDate     DateTime? // This handles your Deadline/Calendar functionality
   createdAt   DateTime  @default(now())
-
+  // --- NEW FIELDS ---
+  sendReminder Boolean   @default(false)  // User toggles this
+  reminderSent Boolean   @default(false)  // System updates this
+  // ------------------
   project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignee    User?     @relation(fields: [assigneeId], references: [id])
 }

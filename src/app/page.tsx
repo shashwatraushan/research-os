@@ -9,7 +9,7 @@ import {
   Trash2, Pencil, Maximize2, Paperclip, ExternalLink,
   FileText, Clock, AlertCircle, X, Sparkles, Loader2, Bot,
   ArrowRight, Filter, ArrowUpDown, Sun, Moon, Key, Lock,
-  ClipboardList, CheckCircle2, Bug, Pin, StickyNote, Lightbulb, 
+  ClipboardList, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
   MoreHorizontal, Link as LinkIcon, CheckSquare, PlayCircle, Zap, Shield, Globe, StopCircle, Archive, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { 
@@ -1059,13 +1059,18 @@ const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout 
 };
 
 /**
- * COMPONENT: LITERATURE MANAGER (With "Swap on Hover" UI)
+ * COMPONENT: LITERATURE MANAGER (With Filtering, Sorting & "Swap on Hover" UI)
  */
 const LiteratureManager = ({ project }) => {
   const { theme } = useTheme();
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // --- NEW: Sorting & Filtering State ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'include', 'exclude', 'unsure'
+  const [sortBy, setSortBy] = useState("newest"); // 'newest', 'title', 'authors', 'year'
+
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaper, setEditingPaper] = useState(null);
@@ -1091,6 +1096,42 @@ const LiteratureManager = ({ project }) => {
     }
   }, [project]);
 
+  // --- NEW: Logic Engine for Filtering & Sorting ---
+  const processedPapers = useMemo(() => {
+    let result = [...papers];
+
+    // 1. Filter by Status
+    if (filterStatus !== 'all') {
+      result = result.filter(p => p.status === filterStatus);
+    }
+
+    // 2. Filter by Search (Title or Authors)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.title.toLowerCase().includes(q) || 
+        (p.authors && p.authors.toLowerCase().includes(q))
+      );
+    }
+
+    // 3. Sort
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'title':
+          return a.title.localeCompare(b.title); // A-Z
+        case 'authors':
+          return (a.authors || "").localeCompare(b.authors || ""); // A-Z
+        case 'year':
+          return (b.year || 0) - (a.year || 0); // Newest Year First
+        case 'newest':
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // Newest Added First
+      }
+    });
+
+    return result;
+  }, [papers, filterStatus, searchQuery, sortBy]);
+  
   // 2. Save (Create/Update)
   const handleSavePaper = async (e) => {
     e.preventDefault();
@@ -1160,7 +1201,7 @@ const LiteratureManager = ({ project }) => {
   return (
     <div className="animate-in fade-in duration-500">
       {/* HEADER */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex justify-between items-end mb-6">
         <div>
           <h2 className="text-xl font-medium mb-2" style={{ color: theme.textMain }}>Literature Review</h2>
           <div className="flex gap-4 text-xs font-mono" style={{ color: theme.textMuted }}>
@@ -1178,12 +1219,63 @@ const LiteratureManager = ({ project }) => {
         </button>
       </div>
 
-      {/* PAPERS LIST */}
+      {/* --- NEW: FILTER & SORT TOOLBAR --- */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 p-1">
+        
+        {/* Search Bar */}
+        <div className="relative flex-1 group">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" style={{ color: theme.textMuted }} />
+          <input 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search title or author..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border bg-transparent outline-none focus:ring-1 transition-all"
+            style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }}
+          />
+        </div>
+
+        {/* Filter & Sort Controls */}
+        <div className="flex items-center gap-2">
+           {/* Filter Dropdown */}
+           <div className="relative">
+             <select
+               value={filterStatus}
+               onChange={(e) => setFilterStatus(e.target.value)}
+               className="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg border bg-transparent outline-none cursor-pointer hover:bg-white/5 transition-colors"
+               style={{ borderColor: theme.border, color: theme.textMain }}
+             >
+               <option value="all">All Status</option>
+               <option value="include">Included</option>
+               <option value="exclude">Excluded</option>
+               <option value="unsure">Unsure</option>
+             </select>
+             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" style={{ color: theme.textMuted }}/>
+           </div>
+
+           {/* Sort Dropdown */}
+           <div className="relative">
+             <select
+               value={sortBy}
+               onChange={(e) => setSortBy(e.target.value)}
+               className="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg border bg-transparent outline-none cursor-pointer hover:bg-white/5 transition-colors"
+               style={{ borderColor: theme.border, color: theme.textMain }}
+             >
+               <option value="newest">Newest Added</option>
+               <option value="title">Title (A-Z)</option>
+               <option value="authors">Author (A-Z)</option>
+               <option value="year">Year (Desc)</option>
+             </select>
+             <ArrowUpDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" style={{ color: theme.textMuted }}/>
+           </div>
+        </div>
+      </div>
+
+      {/* PAPERS LIST (Updated to use processedPapers) */}
       <div className="space-y-3">
-        {loading ? <div className="text-sm opacity-50">Loading papers...</div> : papers.map((paper) => (
+        {loading ? <div className="text-sm opacity-50">Loading papers...</div> : processedPapers.map((paper) => (
           <div 
             key={paper.id}
-            className="group p-4 rounded-lg border transition-all hover:shadow-sm flex gap-4 relative pr-20" // Padding right prevents title overlap
+            className="group p-4 rounded-lg border transition-all hover:shadow-sm flex gap-4 relative pr-20"
             style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}
           >
             {/* Status Bar */}
@@ -1247,9 +1339,9 @@ const LiteratureManager = ({ project }) => {
           </div>
         ))}
 
-        {!loading && papers.length === 0 && (
+        {!loading && processedPapers.length === 0 && (
           <div className="text-center py-12 border border-dashed rounded-xl" style={{ borderColor: theme.border }}>
-            <p style={{ color: theme.textMuted }}>No papers yet.</p>
+            <p style={{ color: theme.textMuted }}>No papers found matching criteria.</p>
           </div>
         )}
       </div>
@@ -1262,11 +1354,11 @@ const LiteratureManager = ({ project }) => {
                 {editingPaper ? "Edit Paper" : "Add New Paper"}
             </h3>
             <form onSubmit={handleSavePaper} className="space-y-4">
-              <input name="title" defaultValue={editingPaper?.title} placeholder="Paper Title" required className="w-full p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border }} />
-              <input name="authors" defaultValue={editingPaper?.authors} placeholder="Authors" required className="w-full p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border }} />
+              <input name="title" defaultValue={editingPaper?.title} placeholder="Paper Title" required className="w-full p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border, color: theme.textMain }} />
+              <input name="authors" defaultValue={editingPaper?.authors} placeholder="Authors" required className="w-full p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border, color: theme.textMain }} />
               <div className="flex gap-4">
-                <input name="year" defaultValue={editingPaper?.year} placeholder="Year" type="number" className="w-1/3 p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border }} />
-                <input name="doi" defaultValue={editingPaper?.doi} placeholder="DOI" className="flex-1 p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border }} />
+                <input name="year" defaultValue={editingPaper?.year} placeholder="Year" type="number" className="w-1/3 p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border, color: theme.textMain }} />
+                <input name="doi" defaultValue={editingPaper?.doi} placeholder="DOI" className="flex-1 p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border, color: theme.textMain }} />
               </div>
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-xs" style={{ color: theme.textMuted }}>Cancel</button>
@@ -1283,13 +1375,19 @@ const LiteratureManager = ({ project }) => {
 };
 
 /**
- * COMPONENT: DATASET REGISTRY (Fixes Uploads + Downloads + Edit)
+ * COMPONENT: DATASET REGISTRY (With Search, Filtering & Sorting)
  */
 const DatasetRegistry = ({ project }) => {
   const { theme } = useTheme();
   const [datasets, setDatasets] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // --- NEW: Filter & Sort State ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterPII, setFilterPII] = useState("all"); // 'all', 'pii', 'safe'
+  const [filterType, setFilterType] = useState("all"); // 'all', 'file', 'link'
+  const [sortBy, setSortBy] = useState("newest"); // 'newest', 'name', 'license'
+
   // UI State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [uploadMode, setUploadMode] = useState('file'); 
@@ -1311,6 +1409,50 @@ const DatasetRegistry = ({ project }) => {
     }
   }, [project]);
 
+  // --- NEW: Logic Engine ---
+  const processedDatasets = useMemo(() => {
+    let result = [...datasets];
+
+    // 1. Search (Name, Description, License)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(ds => 
+        (ds.file?.name || "").toLowerCase().includes(q) ||
+        (ds.description || "").toLowerCase().includes(q) ||
+        (ds.license || "").toLowerCase().includes(q)
+      );
+    }
+
+    // 2. Filter by PII Status
+    if (filterPII !== 'all') {
+      const isPII = filterPII === 'pii';
+      result = result.filter(ds => ds.piiFlag === isPII);
+    }
+
+    // 3. Filter by Type (File vs Link)
+    if (filterType !== 'all') {
+      result = result.filter(ds => {
+        const isFile = ds.file?.url?.includes('cloudinary');
+        return filterType === 'file' ? isFile : !isFile;
+      });
+    }
+
+    // 4. Sort
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return (a.file?.name || "").localeCompare(b.file?.name || "");
+        case 'license':
+          return (a.license || "").localeCompare(b.license || "");
+        case 'newest':
+        default:
+          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+      }
+    });
+
+    return result;
+  }, [datasets, searchQuery, filterPII, filterType, sortBy]);
+
   // 2. Handle Save (Create OR Edit)
   const handleSaveDataset = async (e) => {
     e.preventDefault();
@@ -1318,20 +1460,17 @@ const DatasetRegistry = ({ project }) => {
     
     const formData = new FormData(e.target);
     
-    // IMPORTANT: Ensure projectId is present
     if (!editingDataset) {
         formData.append('projectId', project.id);
         formData.append('type', uploadMode); 
     } else {
         formData.append('id', editingDataset.id);
-        // If editing and NOT replacing file, ensure we don't send an empty file object
         if (!showReplaceFile && uploadMode === 'file') {
             formData.delete('file'); 
         }
     }
 
     try {
-        // We use the SAME logic for POST and PATCH now (FormData)
         const method = editingDataset ? 'PATCH' : 'POST';
         const res = await fetch('/api/datasets', {
             method: method,
@@ -1368,13 +1507,14 @@ const DatasetRegistry = ({ project }) => {
   const handleEditClick = (ds) => {
     setEditingDataset(ds);
     setUploadMode(ds.file?.url?.includes('cloudinary') ? 'file' : 'link');
-    setShowReplaceFile(false); // Reset replace toggle
+    setShowReplaceFile(false); 
     setIsModalOpen(true);
   };
 
   return (
     <div className="animate-in fade-in duration-500">
-      <div className="flex justify-between items-end mb-8">
+      {/* HEADER */}
+      <div className="flex justify-between items-end mb-6">
         <div>
           <h2 className="text-xl font-medium mb-2" style={{ color: theme.textMain }}>Data Registry</h2>
           <p className="text-xs max-w-lg" style={{ color: theme.textMuted }}>
@@ -1390,9 +1530,74 @@ const DatasetRegistry = ({ project }) => {
         </button>
       </div>
 
-      {/* GRID */}
+      {/* --- NEW: FILTER & SORT TOOLBAR --- */}
+      <div className="flex flex-col xl:flex-row gap-3 mb-6 p-1">
+        
+        {/* Search Bar */}
+        <div className="relative flex-1 group">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" style={{ color: theme.textMuted }} />
+          <input 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search name, description, license..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border bg-transparent outline-none focus:ring-1 transition-all"
+            style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }}
+          />
+        </div>
+
+        {/* Filter Controls */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 xl:pb-0">
+           
+           {/* PII Filter */}
+           <div className="relative shrink-0">
+             <select
+               value={filterPII}
+               onChange={(e) => setFilterPII(e.target.value)}
+               className="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg border bg-transparent outline-none cursor-pointer hover:bg-white/5 transition-colors"
+               style={{ borderColor: theme.border, color: theme.textMain }}
+             >
+               <option value="all">All Safety</option>
+               <option value="pii">PII Detected</option>
+               <option value="safe">Safe Only</option>
+             </select>
+             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" style={{ color: theme.textMuted }}/>
+           </div>
+
+           {/* Type Filter */}
+           <div className="relative shrink-0">
+             <select
+               value={filterType}
+               onChange={(e) => setFilterType(e.target.value)}
+               className="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg border bg-transparent outline-none cursor-pointer hover:bg-white/5 transition-colors"
+               style={{ borderColor: theme.border, color: theme.textMain }}
+             >
+               <option value="all">All Types</option>
+               <option value="file">Uploaded (CSV)</option>
+               <option value="link">External Link</option>
+             </select>
+             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" style={{ color: theme.textMuted }}/>
+           </div>
+
+           {/* Sort Dropdown */}
+           <div className="relative shrink-0">
+             <select
+               value={sortBy}
+               onChange={(e) => setSortBy(e.target.value)}
+               className="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg border bg-transparent outline-none cursor-pointer hover:bg-white/5 transition-colors"
+               style={{ borderColor: theme.border, color: theme.textMain }}
+             >
+               <option value="newest">Newest</option>
+               <option value="name">Name (A-Z)</option>
+               <option value="license">License (A-Z)</option>
+             </select>
+             <ArrowUpDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" style={{ color: theme.textMuted }}/>
+           </div>
+        </div>
+      </div>
+
+      {/* GRID (Updated to use processedDatasets) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {loading ? <div className="text-sm opacity-50">Loading data...</div> : datasets.map((ds) => (
+        {loading ? <div className="text-sm opacity-50">Loading data...</div> : processedDatasets.map((ds) => (
           <div 
             key={ds.id}
             className="group p-5 rounded-xl border relative transition-all hover:shadow-md"
@@ -1447,7 +1652,11 @@ const DatasetRegistry = ({ project }) => {
             </div>
           </div>
         ))}
-        {!loading && datasets.length === 0 && <p className="text-xs opacity-50 col-span-2 text-center py-10">No data found.</p>}
+        {!loading && processedDatasets.length === 0 && (
+            <div className="text-center py-12 border border-dashed rounded-xl col-span-1 md:col-span-2" style={{ borderColor: theme.border }}>
+                <p style={{ color: theme.textMuted }}>No datasets found.</p>
+            </div>
+        )}
       </div>
 
       {/* MODAL */}
@@ -1535,16 +1744,30 @@ const DatasetRegistry = ({ project }) => {
 };
 
 /**
- * COMPONENT: EXPERIMENTS (Full CRUD: Edit Studies + Edit Logs)
+ * COMPONENT: EXPERIMENTS (With Advanced Filtering, Sorting, Search & Collapsible Sidebar)
  */
 const Experiments = ({ project }) => {
   const { theme } = useTheme();
   const [experiments, setExperiments] = useState([]);
   const [selectedExp, setSelectedExp] = useState(null);
   
+  // --- UI STATE: Layout ---
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // --- UI STATE: Study List Controls ---
+  const [studySearch, setStudySearch] = useState("");
+  const [studyFilter, setStudyFilter] = useState("all"); // 'all', 'planned', 'running', 'completed', 'abandoned'
+  const [studySort, setStudySort] = useState("newest"); // 'newest', 'alpha', 'logs'
+
+  // --- UI STATE: Log List Controls ---
+  const [logSearch, setLogSearch] = useState("");
+  const [logFilterType, setLogFilterType] = useState("all"); // 'all', 'note', 'result', 'decision', 'bug'
+  const [logShowEvidenceOnly, setLogShowEvidenceOnly] = useState(false);
+  const [logSort, setLogSort] = useState("newest"); // 'newest', 'oldest', 'alpha'
+
   // Modal State (Shared for Create & Edit)
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditingStudy, setIsEditingStudy] = useState(false); // <--- Track mode
+  const [isEditingStudy, setIsEditingStudy] = useState(false); 
   const [createLoading, setCreateLoading] = useState(false);
 
   // Log Input State
@@ -1578,6 +1801,70 @@ const Experiments = ({ project }) => {
     }
   }, [project]);
 
+  // --- LOGIC: Processed Studies (Filter/Sort/Search) ---
+  const processedStudies = useMemo(() => {
+    let result = [...experiments];
+
+    // 1. Search
+    if (studySearch.trim()) {
+        result = result.filter(e => e.title.toLowerCase().includes(studySearch.toLowerCase()));
+    }
+
+    // 2. Filter
+    if (studyFilter !== 'all') {
+        result = result.filter(e => e.status === studyFilter);
+    }
+
+    // 3. Sort
+    result.sort((a, b) => {
+        switch (studySort) {
+            case 'alpha': return a.title.localeCompare(b.title);
+            case 'logs': return (b.logs?.length || 0) - (a.logs?.length || 0);
+            case 'newest':
+            default: return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+        }
+    });
+
+    return result;
+  }, [experiments, studySearch, studyFilter, studySort]);
+
+  // --- LOGIC: Processed Logs (Filter/Sort/Search) ---
+  const processedLogs = useMemo(() => {
+    if (!selectedExp?.logs) return [];
+    let result = [...selectedExp.logs];
+
+    // 1. Search
+    if (logSearch.trim()) {
+        result = result.filter(l => l.message.toLowerCase().includes(logSearch.toLowerCase()));
+    }
+
+    // 2. Filter Type
+    if (logFilterType !== 'all') {
+        result = result.filter(l => l.type === logFilterType);
+    }
+
+    // 3. Filter Evidence
+    if (logShowEvidenceOnly) {
+        result = result.filter(l => l.hasEvidence);
+    }
+
+    // 4. Sort
+    result.sort((a, b) => {
+        // Always keep pinned at top first
+        if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+
+        switch (logSort) {
+            case 'alpha': return a.message.localeCompare(b.message);
+            case 'oldest': return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            case 'newest': 
+            default: return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+    });
+
+    return result;
+  }, [selectedExp, logSearch, logFilterType, logShowEvidenceOnly, logSort]);
+
+
   // --- EXPERIMENT HANDLERS ---
 
   const handleSaveExp = async (e) => {
@@ -1602,9 +1889,7 @@ const Experiments = ({ project }) => {
             });
             const updated = await res.json();
             
-            // Merge the updated fields with existing logs (API might return logs, but safety first)
             const fullUpdated = { ...selectedExp, ...updated, logs: selectedExp.logs };
-            
             setSelectedExp(fullUpdated);
             setExperiments(experiments.map(ex => ex.id === fullUpdated.id ? fullUpdated : ex));
         } else {
@@ -1624,7 +1909,6 @@ const Experiments = ({ project }) => {
   };
 
   const handleUpdateStatus = async (id, updates) => {
-    // Optimistic UI update
     const updated = { ...selectedExp, ...updates };
     setSelectedExp(updated);
     setExperiments(experiments.map(e => e.id === id ? { ...e, ...updates } : e));
@@ -1643,7 +1927,6 @@ const Experiments = ({ project }) => {
     await fetch(`/api/experiments?id=${id}`, { method: 'DELETE' });
   };
 
-  // Open Edit Modal
   const openEditStudyModal = () => {
     setIsEditingStudy(true);
     setIsModalOpen(true);
@@ -1676,17 +1959,14 @@ const Experiments = ({ project }) => {
     finally { setLogLoading(false); }
   };
 
-  // Start Editing Log
   const startEditLog = (log) => {
     setEditingLogId(log.id);
     setEditLogText(log.message);
   };
 
-  // Save Log Edit
   const saveLogEdit = async () => {
     if (!editLogText.trim()) return;
     
-    // Optimistic Update
     const updatedLogs = selectedExp.logs.map(l => l.id === editingLogId ? { ...l, message: editLogText } : l);
     setSelectedExp({ ...selectedExp, logs: updatedLogs });
     setEditingLogId(null);
@@ -1716,7 +1996,6 @@ const Experiments = ({ project }) => {
     await fetch(`/api/experiments/logs?id=${logId}`, { method: 'DELETE' });
   };
 
-  // Helpers
   const toggleLogExpand = (id) => setExpandedLogs(prev => ({ ...prev, [id]: !prev[id] }));
   
   const getStatusStyle = (status) => {
@@ -1737,25 +2016,97 @@ const Experiments = ({ project }) => {
     }
   };
 
-  const uniqueLogs = selectedExp?.logs ? selectedExp.logs.filter((log, index, self) => index === self.findIndex((t) => t.id === log.id)) : [];
-  const sortedLogs = uniqueLogs.sort((a, b) => (a.isPinned === b.isPinned) ? 0 : a.isPinned ? -1 : 1);
-
   return (
     <div className="flex h-[calc(100vh-140px)] gap-6 animate-in fade-in">
       
-      {/* LEFT COL: Studies List */}
-      <div className="w-80 flex flex-col gap-4 border-r pr-6 shrink-0" style={{ borderColor: theme.border }}>
+      {/* LEFT COL: Studies List (Collapsible) */}
+      <div 
+        className={`flex flex-col gap-4 border-r shrink-0 transition-all duration-300 ${isSidebarOpen ? 'w-80 pr-4' : 'w-20 items-center'}`} 
+        style={{ borderColor: theme.border }}
+      >
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-medium" style={{ color: theme.textMain }}>Studies</h2>
-          <button onClick={() => { setIsEditingStudy(false); setIsModalOpen(true); }} className="p-1.5 rounded hover:bg-white/5 transition-colors">
-            <Plus size={18} color={theme.accent} />
-          </button>
+          {isSidebarOpen && <h2 className="text-lg font-medium" style={{ color: theme.textMain }}>Studies</h2>}
+          <div className="flex items-center gap-1">
+             {isSidebarOpen && (
+                <button onClick={() => { setIsEditingStudy(false); setIsModalOpen(true); }} className="p-1.5 rounded hover:bg-white/5 transition-colors">
+                    <Plus size={18} color={theme.accent} />
+                </button>
+             )}
+             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-1.5 rounded hover:bg-white/5 transition-colors" title={isSidebarOpen ? "Collapse" : "Expand"}>
+                {isSidebarOpen ? <ChevronRight size={18} className="rotate-180" color={theme.textMuted}/> : <ChevronRight size={18} color={theme.textMuted}/>}
+             </button>
+          </div>
         </div>
 
+        {/* STUDY FILTERS (Only visible if expanded) */}
+        {isSidebarOpen && (
+            <div className="flex flex-col gap-2 p-1">
+                {/* Search */}
+                <div className="relative">
+                    <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-50" style={{ color: theme.textMuted }} />
+                    <input 
+                        value={studySearch}
+                        onChange={(e) => setStudySearch(e.target.value)}
+                        placeholder="Search studies..."
+                        className="w-full pl-8 pr-2 py-1.5 text-xs rounded border bg-transparent outline-none focus:ring-1"
+                        style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }}
+                    />
+                </div>
+                {/* Filter & Sort Row */}
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
+                        <select 
+                            value={studyFilter}
+                            onChange={(e) => setStudyFilter(e.target.value)}
+                            className="w-full appearance-none pl-2 pr-6 py-1.5 text-[10px] font-medium rounded border bg-transparent outline-none cursor-pointer"
+                            style={{ borderColor: theme.border, color: theme.textMain }}
+                        >
+                            <option value="all">All Status</option>
+                            <option value="planned">Planned</option>
+                            <option value="running">Running</option>
+                            <option value="completed">Done</option>
+                            <option value="abandoned">Archived</option>
+                        </select>
+                        <ChevronDown size={10} className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" style={{ color: theme.textMuted }}/>
+                    </div>
+                    <div className="relative flex-1">
+                        <select 
+                            value={studySort}
+                            onChange={(e) => setStudySort(e.target.value)}
+                            className="w-full appearance-none pl-2 pr-6 py-1.5 text-[10px] font-medium rounded border bg-transparent outline-none cursor-pointer"
+                            style={{ borderColor: theme.border, color: theme.textMain }}
+                        >
+                            <option value="newest">Newest</option>
+                            <option value="alpha">A-Z</option>
+                            <option value="logs">Most Logs</option>
+                        </select>
+                        <ArrowUpDown size={10} className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" style={{ color: theme.textMuted }}/>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* THE LIST */}
         <div className="space-y-3 overflow-y-auto flex-1 custom-scrollbar">
-          {experiments.map(exp => {
+          {processedStudies.map(exp => {
             const isSelected = selectedExp?.id === exp.id;
             const statusStyle = getStatusStyle(exp.status);
+            
+            if (!isSidebarOpen) {
+                // Collapsed View (Vertical Text / Icons)
+                return (
+                    <div 
+                        key={exp.id}
+                        onClick={() => { setIsSidebarOpen(true); setSelectedExp(exp); }}
+                        className={`w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer mx-auto transition-all ${isSelected ? 'shadow-md' : 'opacity-60 hover:opacity-100'}`}
+                        style={{ backgroundColor: statusStyle.bg, borderColor: isSelected ? theme.accent : statusStyle.border, color: statusStyle.color }}
+                        title={exp.title}
+                    >
+                        {exp.title.substring(0,1).toUpperCase()}
+                    </div>
+                );
+            }
+
             return (
                 <div 
                 key={exp.id}
@@ -1771,7 +2122,7 @@ const Experiments = ({ project }) => {
                     <h3 className={`text-sm font-medium leading-tight line-clamp-2 ${isSelected ? 'text-white' : ''}`} style={{ color: isSelected ? '#FFF' : theme.textMain }}>
                         {exp.title}
                     </h3>
-                    <button onClick={(e) => handleDeleteExp(exp.id, e)} className="opacity-0 group-hover:opacity-100 text-red-500 p-1 hover:bg-red-500/10 rounded"><Trash2 size={12}/></button>
+                    <button onClick={(e) => handleDeleteExp(exp.id, e)} className="opacity-0 group-hover:opacity-100 text-red-500 p-1 hover:bg-red-500/10 rounded transition-opacity"><Trash2 size={12}/></button>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-3">
                     <span className="text-[10px] px-2 py-0.5 rounded-full border uppercase font-bold tracking-wider" 
@@ -1792,25 +2143,27 @@ const Experiments = ({ project }) => {
                 </div>
             )
           })}
+          
+          {isSidebarOpen && processedStudies.length === 0 && (
+              <div className="text-center py-8 opacity-50 text-xs" style={{ color: theme.textMuted }}>No studies found.</div>
+          )}
         </div>
       </div>
 
       {/* RIGHT COL: Workbench */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* CHANGE 1: Added overflow-y-auto here so the whole column scrolls */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar">
         {selectedExp ? (
-          <>
-            {/* HEADER PANEL */}
-            <div className="mb-6 p-6 rounded-xl border relative" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
+          <div className="pr-2"> {/* Added padding wrapper to prevent scrollbar overlap */}
+            {/* EXPERIMENT HEADER */}
+            <div className="mb-4 p-6 rounded-xl border relative" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
               <div className="flex justify-between items-start mb-6">
-                
-                {/* Title + Edit Button */}
                 <div className="flex items-center gap-3 flex-1 mr-4">
                     <h1 className="text-xl font-bold" style={{ color: theme.textMain }}>{selectedExp.title}</h1>
                     <button onClick={openEditStudyModal} className="p-1.5 rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-colors">
                         <Pencil size={14} />
                     </button>
                 </div>
-                
                 <div className="relative">
                     <select 
                         value={selectedExp.status}
@@ -1851,8 +2204,59 @@ const Experiments = ({ project }) => {
               </div>
             </div>
 
-            {/* TIMELINE INPUT */}
-            <div className="flex flex-col gap-3 mb-6 p-4 rounded-xl border" style={{ borderColor: theme.border, backgroundColor: theme.bg }}>
+            {/* LOG TOOLBAR (Filter/Sort/Search) */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 mb-4 pb-2 border-b" style={{ borderColor: theme.border }}>
+                <div className="relative flex-1 w-full">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-50" style={{ color: theme.textMuted }} />
+                    <input 
+                        value={logSearch}
+                        onChange={(e) => setLogSearch(e.target.value)}
+                        placeholder="Search logs..."
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded border bg-transparent outline-none focus:ring-1"
+                        style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }}
+                    />
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+                    {/* Filter Type */}
+                    <select
+                        value={logFilterType}
+                        onChange={(e) => setLogFilterType(e.target.value)}
+                        className="appearance-none pl-2 pr-6 py-1.5 text-[10px] font-medium rounded border bg-transparent outline-none cursor-pointer"
+                        style={{ borderColor: theme.border, color: theme.textMain }}
+                    >
+                        <option value="all">All Types</option>
+                        <option value="note">Notes</option>
+                        <option value="result">Results</option>
+                        <option value="decision">Decisions</option>
+                        <option value="bug">Bugs</option>
+                    </select>
+                    
+                    {/* Sort */}
+                    <select
+                        value={logSort}
+                        onChange={(e) => setLogSort(e.target.value)}
+                        className="appearance-none pl-2 pr-6 py-1.5 text-[10px] font-medium rounded border bg-transparent outline-none cursor-pointer"
+                        style={{ borderColor: theme.border, color: theme.textMain }}
+                    >
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                        <option value="alpha">A-Z</option>
+                    </select>
+
+                    {/* Evidence Toggle */}
+                    <button 
+                        onClick={() => setLogShowEvidenceOnly(!logShowEvidenceOnly)}
+                        className={`px-2 py-1.5 text-[10px] font-medium rounded border transition-colors flex items-center gap-1 whitespace-nowrap ${logShowEvidenceOnly ? 'bg-blue-500/10 border-blue-500/30 text-blue-500' : 'hover:bg-white/5'}`}
+                        style={{ borderColor: logShowEvidenceOnly ? undefined : theme.border, color: logShowEvidenceOnly ? undefined : theme.textMuted }}
+                    >
+                        {logShowEvidenceOnly ? <CheckCircle2 size={10}/> : <div className="w-2.5 h-2.5 rounded-full border border-current opacity-50" />}
+                        Has Evidence
+                    </button>
+                </div>
+            </div>
+
+            {/* LOG INPUT */}
+            <div className="flex flex-col gap-3 mb-4 p-4 rounded-xl border" style={{ borderColor: theme.border, backgroundColor: theme.bg }}>
                <div className="flex gap-2">
                   {['note', 'result', 'decision', 'bug'].map(type => (
                       <button key={type} onClick={() => setLogType(type)} className={`text-[10px] px-3 py-1 rounded-full border transition-all uppercase font-bold flex items-center gap-1.5 ${logType === type ? 'bg-white/10 border-white/20 text-white' : 'border-transparent opacity-40 hover:opacity-100'}`}>
@@ -1875,9 +2279,10 @@ const Experiments = ({ project }) => {
                {logFile && <span className="text-[10px] text-blue-400">Attached: {logFile.name}</span>}
             </div>
 
-            {/* TIMELINE FEED (With Edit) */}
-            <div className="flex-1 overflow-y-auto space-y-4 pl-2 pr-2 custom-scrollbar pb-10">
-              {sortedLogs.map((log) => {
+            {/* TIMELINE FEED */}
+            {/* CHANGE 2: Removed 'flex-1' and 'overflow-y-auto' so it expands naturally */}
+            <div className="space-y-4 pl-2 pr-2 pb-10">
+              {processedLogs.map((log) => {
                 const isExpanded = expandedLogs[log.id];
                 const isLong = log.message.length > 80 || log.message.includes('\n');
                 
@@ -1896,7 +2301,7 @@ const Experiments = ({ project }) => {
                                 <span className="text-[10px] opacity-30" style={{ color: theme.textMuted }}>{new Date(log.createdAt).toLocaleString()}</span>
                             </div>
                             
-                            {/* --- EDITABLE LOG AREA --- */}
+                            {/* EDIT AREA */}
                             {editingLogId === log.id ? (
                                 <div className="mt-2">
                                     <textarea 
@@ -1932,7 +2337,7 @@ const Experiments = ({ project }) => {
                             )}
                         </div>
 
-                        {/* --- ACTIONS --- */}
+                        {/* ACTIONS */}
                         {editingLogId !== log.id && (
                             <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
                                 <button onClick={() => handleTogglePin(log)} className={`p-1.5 rounded hover:bg-white/5 ${log.isPinned ? 'text-yellow-500' : 'text-gray-500'}`}><Pin size={12} className={log.isPinned ? "fill-current" : ""}/></button>
@@ -1944,8 +2349,9 @@ const Experiments = ({ project }) => {
                     </div>
                 );
               })}
+              {processedLogs.length === 0 && <div className="text-center py-10 opacity-50 text-xs">No logs found.</div>}
             </div>
-          </>
+          </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center opacity-30 gap-4">
             <FlaskConical size={48} />
@@ -2159,12 +2565,17 @@ const HeatmapCardPreview = ({ url, theme, onClick }) => {
 };
 
 /**
- * COMPONENT: ARTIFACTS (Fixed: File Staging Feedback + Smart Edit + Unified Visuals)
+ * COMPONENT: ARTIFACTS (With Filtering, Sorting & Search)
  */
 const Artifacts = ({ project }) => {
   const { theme } = useTheme();
   const [artifacts, setArtifacts] = useState([]);
   
+  // --- NEW: Filter & Sort State ---
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("all"); // 'all', 'image', 'chart', 'heatmap', 'file'
+  const [sortBy, setSortBy] = useState("newest"); // 'newest', 'alpha'
+
   // UI State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedArtifact, setSelectedArtifact] = useState(null); // For Viewing
@@ -2174,14 +2585,14 @@ const Artifacts = ({ project }) => {
   const [uploadMode, setUploadMode] = useState('file'); // 'file' | 'link'
   const [showReplace, setShowReplace] = useState(false); // For Edit Mode
   const [loading, setLoading] = useState(false);
-  const [stagedFile, setStagedFile] = useState(null); // <--- NEW: Track selected file name
+  const [stagedFile, setStagedFile] = useState(null);
 
-  // 1. Fetch (Safely)
+  // 1. Fetch
   useEffect(() => {
     if (project?.id) {
       fetch(`/api/artifacts?projectId=${project.id}`)
         .then(res => {
-            if (!res.ok) return []; // If API errors, return empty array instead of crashing
+            if (!res.ok) return [];
             return res.json();
         })
         .then(data => {
@@ -2190,6 +2601,34 @@ const Artifacts = ({ project }) => {
         .catch(err => console.error("Failed to load artifacts:", err));
     }
   }, [project]);
+
+  // --- NEW: Logic Engine ---
+  const processedArtifacts = useMemo(() => {
+    let result = [...artifacts];
+
+    // 1. Search (Title, Subtitle)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(a => 
+        a.title.toLowerCase().includes(q) || 
+        (a.subtitle || "").toLowerCase().includes(q)
+      );
+    }
+
+    // 2. Filter by Type
+    if (filterType !== 'all') {
+      result = result.filter(a => a.type === filterType);
+    }
+
+    // 3. Sort
+    result.sort((a, b) => {
+      if (sortBy === 'alpha') return a.title.localeCompare(b.title);
+      // Default: Newest
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    return result;
+  }, [artifacts, searchQuery, filterType, sortBy]);
 
   // 2. Handle Save
   const handleSaveArtifact = async (e) => {
@@ -2231,7 +2670,7 @@ const Artifacts = ({ project }) => {
     setArtifacts(artifacts.filter(a => a.id !== id));
   }
 
-  // Edit Click Handler (Smart Mode Lock)
+  // Edit Click Handler
   const handleEditClick = (art, e) => {
     e.stopPropagation();
     setEditingArtifact(art);
@@ -2251,20 +2690,19 @@ const Artifacts = ({ project }) => {
     setIsModalOpen(true);
   };
 
-  // Handle File Selection
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
         setStagedFile(e.target.files[0].name);
     }
   };
 
-  // Helper: Visual Types (Image/Chart share logic)
   const isVisualType = (type) => ['image', 'chart'].includes(type);
 
   return (
     <div className="animate-in fade-in duration-500 relative z-0 pt-6">
       
-      <div className="flex justify-between items-center mb-8">
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-medium" style={{ color: theme.textMain }}>Results Gallery</h2>
         <button 
             onClick={openCreateModal}
@@ -2275,9 +2713,57 @@ const Artifacts = ({ project }) => {
         </button>
       </div>
 
-      {/* GRID */}
+      {/* --- NEW: FILTER & SORT TOOLBAR --- */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 p-1">
+        {/* Search */}
+        <div className="relative flex-1 group">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" style={{ color: theme.textMuted }} />
+          <input 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search artifacts..."
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border bg-transparent outline-none focus:ring-1 transition-all"
+            style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }}
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+           {/* Filter Type */}
+           <div className="relative">
+             <select
+               value={filterType}
+               onChange={(e) => setFilterType(e.target.value)}
+               className="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg border bg-transparent outline-none cursor-pointer hover:bg-white/5 transition-colors"
+               style={{ borderColor: theme.border, color: theme.textMain }}
+             >
+               <option value="all">All Types</option>
+               <option value="image">Images</option>
+               <option value="chart">Charts</option>
+               <option value="heatmap">Heatmaps</option>
+               <option value="file">Files</option>
+             </select>
+             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" style={{ color: theme.textMuted }}/>
+           </div>
+
+           {/* Sort */}
+           <div className="relative">
+             <select
+               value={sortBy}
+               onChange={(e) => setSortBy(e.target.value)}
+               className="appearance-none pl-3 pr-8 py-2 text-xs font-medium rounded-lg border bg-transparent outline-none cursor-pointer hover:bg-white/5 transition-colors"
+               style={{ borderColor: theme.border, color: theme.textMain }}
+             >
+               <option value="newest">Newest</option>
+               <option value="alpha">A-Z</option>
+             </select>
+             <ArrowUpDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" style={{ color: theme.textMuted }}/>
+           </div>
+        </div>
+      </div>
+
+      {/* GRID (Using processedArtifacts) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
-        {artifacts.map((art) => (
+        {processedArtifacts.map((art) => (
           <div key={art.id} className="group rounded-xl overflow-hidden border relative flex flex-col transition-shadow hover:shadow-md h-full" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
             
             {/* PREVIEW AREA */}
@@ -2333,9 +2819,13 @@ const Artifacts = ({ project }) => {
         ))}
       </div>
 
-      {artifacts.length === 0 && <p className="text-center py-20 text-xs opacity-50">No artifacts yet.</p>}
+      {processedArtifacts.length === 0 && (
+          <div className="text-center py-20 border border-dashed rounded-xl" style={{ borderColor: theme.border }}>
+            <p className="text-xs opacity-50" style={{ color: theme.textMuted }}>No artifacts found.</p>
+          </div>
+      )}
 
-      {/* FULL SCREEN MODAL */}
+      {/* FULL SCREEN MODAL (Kept same) */}
       {selectedArtifact && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="relative w-full max-w-4xl max-h-[90vh] rounded-xl border shadow-2xl overflow-hidden flex flex-col" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
@@ -2365,13 +2855,13 @@ const Artifacts = ({ project }) => {
         </div>
       )}
 
-      {/* CREATE / EDIT MODAL */}
+      {/* CREATE / EDIT MODAL (Kept same) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-xl border shadow-2xl" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
             <h3 className="text-lg font-medium mb-4" style={{ color: theme.textMain }}>{editingArtifact ? "Edit Result" : "Add Result"}</h3>
             
-            {/* TABS: Only show if creating new (Lock logic applied) */}
+            {/* TABS */}
             {!editingArtifact ? (
                 <div className="flex gap-4 mb-4 border-b" style={{ borderColor: theme.border }}>
                     <button 
@@ -2390,7 +2880,6 @@ const Artifacts = ({ project }) => {
                     </button>
                 </div>
             ) : (
-                // If editing, show label instead of tabs
                 <div className="mb-4 text-xs font-bold uppercase tracking-wider opacity-50" style={{ color: theme.textMuted }}>
                     {uploadMode === 'file' ? 'Editing Upload' : 'Editing Link'}
                 </div>
@@ -2406,23 +2895,19 @@ const Artifacts = ({ project }) => {
                   <option value="code">Code</option>
                 </select>
                 
-                {/* DYNAMIC INPUT */}
                 {uploadMode === 'link' ? (
                     <input name="url" defaultValue={editingArtifact?.url} placeholder="https://..." required={!editingArtifact} className="flex-1 p-2 text-sm rounded border bg-transparent" style={{ borderColor: theme.border }} />
                 ) : (
                     <div className="flex-1 relative group">
-                        {/* FILE INPUT (Hidden overlay) */}
                         {(!editingArtifact || showReplace) && (
                             <input 
                                 type="file" 
                                 name="file" 
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" 
                                 required={!editingArtifact}
-                                onChange={handleFileChange} // Show feedback
+                                onChange={handleFileChange} 
                             />
                         )}
-
-                        {/* CUSTOM FILE BUTTON UI */}
                         {editingArtifact && !showReplace ? (
                             <div className="flex items-center justify-between p-2 border rounded bg-gray-500/10" style={{ borderColor: theme.border }}>
                                 <span className="text-xs truncate opacity-70 max-w-[150px]">Keep Current File</span>
@@ -2457,19 +2942,26 @@ const Artifacts = ({ project }) => {
 };
 
 /**
- * COMPONENT: OVERVIEW HUB (Fixed Layout + Single Line Tasks)
+ * COMPONENT: OVERVIEW HUB (With Reminders, Deadlines, Pinning, & Advanced Input)
  */
 const OverviewHub = ({ project }) => {
   const { theme } = useTheme();
   const [data, setData] = useState(null);
   
-  // Task Input State
+  // Input State
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newDueDate, setNewDueDate] = useState(""); 
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [useReminder, setUseReminder] = useState(false); // <--- NEW: Reminder State
+
+  // Filter & Sort State
+  const [taskFilter, setTaskFilter] = useState("all"); 
+  const [taskSort, setTaskSort] = useState("recent"); 
   
   // UI State
   const [editingTask, setEditingTask] = useState(null);
   const [editTitle, setEditTitle] = useState("");
-  const [expandedTasks, setExpandedTasks] = useState({}); // Tracks open tasks
+  const [expandedTasks, setExpandedTasks] = useState({});
 
   // 1. Fetch Data
   useEffect(() => {
@@ -2483,34 +2975,77 @@ const OverviewHub = ({ project }) => {
   // Helper: Count Words
   const getWordCount = (str) => str.trim().split(/\s+/).filter(Boolean).length;
 
-  // 2. Add Task
+  // 2. Add Task (With Deadline & Reminder)
   const handleAddTask = async (e) => {
     e.preventDefault();
     if (!newTaskTitle.trim()) return;
 
+    const payload = { 
+        projectId: project.id, 
+        title: newTaskTitle,
+        dueDate: newDueDate ? new Date(newDueDate).toISOString() : null,
+        sendReminder: useReminder // <--- SEND REMINDER FLAG
+    };
+
     const res = await fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId: project.id, title: newTaskTitle })
+      body: JSON.stringify(payload)
     });
     const newTask = await res.json();
+    
     setData(prev => ({ ...prev, tasks: [newTask, ...(prev.tasks || [])] }));
+    
+    // Reset form
     setNewTaskTitle("");
+    setNewDueDate("");
+    setShowDatePicker(false);
+    setUseReminder(false); // Reset toggle
   };
 
-  // 3. Handle Input (Limit 100 Words)
-  const handleInputChange = (e) => {
-    const val = e.target.value;
-    if (getWordCount(val) <= 100) setNewTaskTitle(val);
-  };
+  // 3. Logic: Filter & Sort
+  const processedTasks = useMemo(() => {
+    if (!data?.tasks) return [];
+    let res = [...data.tasks];
 
-  // 4. Toggle Expand
-  const toggleExpand = (id) => {
-    setExpandedTasks(prev => ({ ...prev, [id]: !prev[id] }));
+    // Filter
+    if (taskFilter === 'todo') res = res.filter(t => t.status !== 'done');
+    if (taskFilter === 'done') res = res.filter(t => t.status === 'done');
+
+    // Sort
+    res.sort((a, b) => {
+        const aPinned = a.priority === 'high';
+        const bPinned = b.priority === 'high';
+        if (aPinned !== bPinned) return aPinned ? -1 : 1;
+
+        switch (taskSort) {
+            case 'alpha': return a.title.localeCompare(b.title);
+            case 'due': 
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+            case 'recent':
+            default: return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+    });
+    return res;
+  }, [data?.tasks, taskFilter, taskSort]);
+
+  // 4. Pin Task
+  const handleTogglePin = async (task) => {
+    const newPriority = task.priority === 'high' ? 'medium' : 'high';
+    const updatedTasks = data.tasks.map(t => t.id === task.id ? { ...t, priority: newPriority } : t);
+    setData(prev => ({ ...prev, tasks: updatedTasks }));
+
+    await fetch('/api/tasks', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: task.id, priority: newPriority })
+    });
   };
 
   // 5. Toggle Status
-  const handleToggleTask = async (task) => {
+  const handleToggleStatus = async (task) => {
     const newStatus = task.status === 'done' ? 'todo' : 'done';
     const updatedTasks = data.tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t);
     setData(prev => ({ ...prev, tasks: updatedTasks }));
@@ -2542,6 +3077,27 @@ const OverviewHub = ({ project }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: editingTask, title: editTitle })
     });
+  };
+
+  // Toggle Expand Helper
+  const toggleExpand = (id) => {
+    setExpandedTasks(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Format Date Helper
+  const formatDeadline = (task) => {
+    if (!task.dueDate) return null;
+    const date = new Date(task.dueDate);
+    const now = new Date();
+    const isOverdue = date < now;
+    return (
+        <span className={`text-[9px] px-1.5 py-0.5 rounded border flex items-center gap-1 ${isOverdue ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-gray-500/10 border-gray-500/20 text-gray-500'}`}>
+            <Clock size={8} />
+            {date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+            {/* Show Bell icon if reminder is ON */}
+            {task.sendReminder && <Bell size={8} className="fill-current" />}
+        </span>
+    );
   };
 
   if (!data) return <div className="p-8 text-center text-sm opacity-50">Loading Dashboard...</div>;
@@ -2587,13 +3143,9 @@ const OverviewHub = ({ project }) => {
         ))}
       </div>
 
-      {/* LAYOUT FIX: 
-          h-[28rem] (approx 450px) locks the height of this entire row.
-          Graphs won't grow. Tasks will scroll.
-      */}
       <div className="grid grid-cols-3 gap-6 h-[28rem]">
         
-        {/* COL 1: TASK PROGRESS (Donut) */}
+        {/* COL 1 & 2 (Charts) - Kept same as before */}
         <div className="col-span-1 rounded-xl border p-6 flex flex-col relative h-full" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
           <h3 className="text-sm font-medium mb-2" style={{ color: theme.textMain }}>Task Completion</h3>
           <div className="flex-1 w-full min-h-0 relative">
@@ -2611,7 +3163,6 @@ const OverviewHub = ({ project }) => {
           </div>
         </div>
 
-        {/* COL 2: LITERATURE TIMELINE (Bar) */}
         <div className="col-span-1 rounded-xl border p-6 flex flex-col h-full" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
           <h3 className="text-sm font-medium mb-2" style={{ color: theme.textMain }}>Literature / Year</h3>
           <div className="flex-1 w-full min-h-0">
@@ -2625,100 +3176,184 @@ const OverviewHub = ({ project }) => {
           </div>
         </div>
 
-        {/* COL 3: TASKS (Scrollable + Single Line) */}
+        {/* COL 3: TASKS */}
         <div className="col-span-1 rounded-xl border p-4 flex flex-col h-full overflow-hidden" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
-           <div className="flex justify-between items-center mb-3 shrink-0">
-             <h3 className="text-sm font-medium" style={{ color: theme.textMain }}>Tasks</h3>
-             <span className="text-[10px] opacity-50" style={{ color: theme.textMuted }}>{getWordCount(newTaskTitle)}/100 words</span>
+           
+           {/* HEADER & FILTERS */}
+           <div className="flex flex-col gap-2 mb-3 shrink-0">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-medium" style={{ color: theme.textMain }}>Tasks</h3>
+                    <div className="flex gap-2">
+                        <div className="relative group">
+                            <button className="p-1 hover:bg-white/5 rounded"><ArrowUpDown size={12} color={theme.textMuted}/></button>
+                            <select value={taskSort} onChange={(e) => setTaskSort(e.target.value)} className="absolute right-0 top-0 w-full h-full opacity-0 cursor-pointer">
+                                <option value="recent">Recent</option>
+                                <option value="alpha">Alphabetical</option>
+                                <option value="due">Due Date</option>
+                            </select>
+                        </div>
+                        <div className="relative group">
+                            <button className="p-1 hover:bg-white/5 rounded"><Filter size={12} color={theme.textMuted}/></button>
+                            <select value={taskFilter} onChange={(e) => setTaskFilter(e.target.value)} className="absolute right-0 top-0 w-full h-full opacity-0 cursor-pointer">
+                                <option value="all">All</option>
+                                <option value="todo">Pending</option>
+                                <option value="done">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
            </div>
            
-           {/* Add Input */}
-           <div className="flex gap-2 mb-4 shrink-0 items-start">
-             <textarea 
-               className="flex-1 p-2 text-xs rounded border bg-transparent outline-none focus:ring-1 resize-none custom-scrollbar"
-               rows={2}
-               style={{ borderColor: theme.border, '--tw-ring-color': theme.accent, color: theme.textMain }}
-               placeholder="Add task..."
-               value={newTaskTitle}
-               onChange={handleInputChange}
-               onKeyDown={(e) => {
-                 if (e.key === 'Enter' && !e.shiftKey) {
-                   e.preventDefault();
-                   handleAddTask(e);
-                 }
-               }}
-             />
-             <button onClick={handleAddTask} disabled={!newTaskTitle.trim()} className="p-2 h-8 w-8 flex items-center justify-center rounded hover:opacity-80 disabled:opacity-50 mt-1" style={{ backgroundColor: theme.accent, color: '#FFF' }}>
-               <Plus size={14} />
-             </button>
+           {/* ADD TASK INPUT (Layout Fixed: Date on new line) */}
+           <div className="flex flex-col gap-2 mb-4 shrink-0 bg-white/5 p-3 rounded-lg border border-transparent focus-within:border-gray-500/30 transition-colors">
+             
+             {/* Text Area & Word Count */}
+             <div className="flex gap-2 relative">
+                <textarea 
+                    className="flex-1 text-xs bg-transparent outline-none resize-none custom-scrollbar pb-4"
+                    rows={2}
+                    style={{ color: theme.textMain }}
+                    placeholder="Add new task..."
+                    value={newTaskTitle}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        if (getWordCount(val) <= 100) setNewTaskTitle(val);
+                    }}
+                />
+                
+                {/* Word Count */}
+                <span className="absolute bottom-0 left-0 text-[9px] opacity-30 select-none pointer-events-none" style={{ color: theme.textMuted }}>
+                    {getWordCount(newTaskTitle)}/100
+                </span>
+
+                <button 
+                    onClick={handleAddTask} 
+                    disabled={!newTaskTitle.trim()} 
+                    className="p-2 h-8 w-8 flex items-center justify-center rounded hover:opacity-80 disabled:opacity-50 self-start mt-1" 
+                    style={{ backgroundColor: theme.accent, color: '#FFF' }}
+                >
+                    <Plus size={14} />
+                </button>
+             </div>
+             
+             {/* Controls Section */}
+             <div className="pt-2 border-t border-white/5">
+                {/* Buttons Row */}
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={() => setShowDatePicker(!showDatePicker)}
+                        className={`px-3 py-1.5 rounded flex items-center gap-2 text-xs transition-colors shrink-0 ${newDueDate ? 'text-blue-400 bg-blue-400/10' : 'text-gray-400 hover:bg-white/5'}`}
+                    >
+                        <Clock size={14} className={newDueDate ? "text-blue-400" : "text-white"} /> 
+                        {newDueDate ? new Date(newDueDate).toLocaleDateString() : "Set Date"}
+                    </button>
+
+                    <button 
+                        onClick={() => setUseReminder(!useReminder)}
+                        className={`px-3 py-1.5 rounded flex items-center gap-2 text-xs transition-colors shrink-0 ${useReminder ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-500 hover:bg-white/5'}`}
+                        title="Email Reminder"
+                    >
+                        <Bell size={14} className={useReminder ? "fill-current" : ""} />
+                        {useReminder ? "On" : "Remind Me"}
+                    </button>
+                </div>
+
+                {/* Date Input Row (Moved to next line) */}
+                {showDatePicker && (
+                    <div className="mt-3 animate-in fade-in slide-in-from-top-1">
+                        <input 
+                            type="datetime-local" 
+                            className="w-full bg-black/20 text-xs border rounded border-gray-600 outline-none p-2"
+                            style={{ color: theme.textMain }}
+                            value={newDueDate}
+                            onChange={(e) => setNewDueDate(e.target.value)}
+                        />
+                    </div>
+                )}
+             </div>
            </div>
 
-           {/* Scrollable List Container - flex-1 takes remaining space, overflow-y-auto makes it scroll */}
+           {/* TASK LIST */}
            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-             {allTasks.map(task => {
+             {processedTasks.map(task => {
+               const isPinned = task.priority === 'high';
+               
+               // Logic: Split lines for "Show More"
+               const lines = task.title.split('\n');
+               const firstLine = lines[0];
+               const hasMoreContent = lines.length > 1 || task.title.length > 60;
                const isExpanded = expandedTasks[task.id];
-               const isLong = task.title.length > 40; // Threshold for Show More
 
                return (
                  <div 
                    key={task.id} 
-                   className="flex items-start gap-3 p-2 rounded hover:bg-white/5 group border border-transparent hover:border-gray-500/20 transition-all"
+                   className={`flex flex-col p-2 rounded group border transition-all ${isPinned ? 'bg-yellow-500/5 border-yellow-500/20' : 'hover:bg-white/5 border-transparent hover:border-gray-500/20'}`}
                  >
-                   {/* Checkbox */}
-                   <button 
-                      onClick={() => handleToggleTask(task)}
-                      className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${task.status === 'done' ? 'bg-green-500 border-green-500' : 'border-gray-500'}`}
-                   >
-                     {task.status === 'done' && <Check size={10} color="#FFF" />}
-                   </button>
+                   <div className="flex items-start gap-2">
+                        {/* Checkbox */}
+                        <button 
+                            onClick={() => handleToggleStatus(task)}
+                            className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${task.status === 'done' ? 'bg-green-500 border-green-500' : 'border-gray-500'}`}
+                        >
+                            {task.status === 'done' && <Check size={10} color="#FFF" />}
+                        </button>
 
-                   {/* Content Area */}
-                   <div className="flex-1 min-w-0">
-                      {editingTask === task.id ? (
-                          <div className="flex gap-2">
-                              <textarea 
-                                  autoFocus
-                                  className="w-full text-xs bg-transparent border-b outline-none resize-none"
-                                  rows={3}
-                                  style={{ borderColor: theme.accent, color: theme.textMain }}
-                                  value={editTitle}
-                                  onChange={(e) => setEditTitle(e.target.value)}
-                              />
-                              <div className="flex flex-col gap-1">
-                                <button onClick={saveEdit} className="text-green-500"><Check size={12}/></button>
-                                <button onClick={() => setEditingTask(null)} className="text-red-500"><X size={12}/></button>
-                              </div>
-                          </div>
-                      ) : (
-                          <div>
-                            <p 
-                                className={`text-xs ${task.status === 'done' ? 'line-through opacity-50' : ''} ${isExpanded ? 'whitespace-pre-wrap' : 'truncate'}`} 
-                                style={{ color: theme.textMain }}
-                            >
-                               {task.title}
-                            </p>
-                            
-                            {/* Show More / Less Toggle */}
-                            {isLong && (
-                                <button 
-                                    onClick={() => toggleExpand(task.id)}
-                                    className="text-[10px] flex items-center gap-1 mt-0.5 opacity-60 hover:opacity-100 hover:underline"
-                                    style={{ color: theme.accent }}
-                                >
-                                    {isExpanded ? <>Show Less <ChevronUp size={10}/></> : <>Show More <ChevronDown size={10}/></>}
-                                </button>
+                        {/* Content Area */}
+                        <div className="flex-1 min-w-0">
+                            {editingTask === task.id ? (
+                                <div className="flex gap-2 mb-1">
+                                    <textarea 
+                                        autoFocus
+                                        className="w-full text-xs bg-transparent border-b outline-none resize-none"
+                                        rows={3}
+                                        style={{ borderColor: theme.accent, color: theme.textMain }}
+                                        value={editTitle}
+                                        onChange={(e) => setEditTitle(e.target.value)}
+                                    />
+                                    <div className="flex flex-col gap-1">
+                                        <button onClick={saveEdit} className="text-green-500"><Check size={12}/></button>
+                                        <button onClick={() => setEditingTask(null)} className="text-red-500"><X size={12}/></button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div>
+                                    <p 
+                                        className={`text-xs ${task.status === 'done' ? 'line-through opacity-50' : ''} whitespace-pre-wrap`} 
+                                        style={{ color: theme.textMain }}
+                                    >
+                                        {isExpanded ? task.title : firstLine}
+                                        {!isExpanded && hasMoreContent && <span className="opacity-50">...</span>}
+                                    </p>
+
+                                    {hasMoreContent && (
+                                        <button 
+                                            onClick={() => toggleExpand(task.id)}
+                                            className="text-[10px] flex items-center gap-1 mt-1 opacity-60 hover:opacity-100 hover:underline cursor-pointer w-fit"
+                                            style={{ color: theme.accent }}
+                                        >
+                                            {isExpanded ? <>Show Less <ChevronUp size={10}/></> : <>Show More <ChevronDown size={10}/></>}
+                                        </button>
+                                    )}
+                                </div>
                             )}
-                          </div>
-                      )}
+                            
+                            {/* Meta Row */}
+                            <div className="flex justify-between items-center h-4 mt-1">
+                                {formatDeadline(task)}
+                                
+                                {/* Actions */}
+                                {!editingTask && (
+                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+                                        <button onClick={() => handleTogglePin(task)} title="Pin" className={`p-1 rounded hover:bg-white/10 ${isPinned ? 'text-yellow-500' : 'text-gray-500'}`}>
+                                            <Pin size={10} className={isPinned ? "fill-current" : ""}/>
+                                        </button>
+                                        <button onClick={() => startEditing(task)} className="p-1 text-blue-500 hover:bg-blue-500/10 rounded"><Pencil size={10}/></button>
+                                        <button onClick={() => handleDeleteTask(task.id)} className="p-1 text-red-500 hover:bg-red-500/10 rounded"><Trash2 size={10}/></button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                    </div>
-
-                   {/* Edit/Delete Actions */}
-                   {!editingTask && (
-                       <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => startEditing(task)} className="p-1 text-blue-500 hover:bg-blue-500/10 rounded"><Pencil size={12}/></button>
-                          <button onClick={() => handleDeleteTask(task.id)} className="p-1 text-red-500 hover:bg-red-500/10 rounded"><Trash2 size={12}/></button>
-                       </div>
-                   )}
                  </div>
                );
              })}
