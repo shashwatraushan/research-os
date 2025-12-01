@@ -1,0 +1,226 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String
+  role          String    @default("VIEWER")
+  createdAt     DateTime  @default(now())
+
+  memberships   Member[]
+  tasks         Task[]
+  audits        Audit[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  field       String?
+  color       String   @default("#5E6AD2")
+  status      String   @default("active")
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     Member[]
+  tasks       Task[]
+  papers      Paper[]
+  files       File[]
+  datasets    Dataset[]
+  surveys     Survey[]
+  experiments Experiment[]
+  artifacts   Artifact[]
+}
+
+model Member {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  projectId   String
+  title       String
+  status      String    @default("todo") 
+  priority    String    @default("medium") // <--- NEW: 'low', 'medium', 'high'
+  assigneeId  String?
+  dueDate     DateTime? // This handles your Deadline/Calendar functionality
+  createdAt   DateTime  @default(now())
+
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee    User?     @relation(fields: [assigneeId], references: [id])
+}
+
+model Paper {
+  id          String   @id @default(cuid())
+  projectId   String
+  title       String
+  authors     String?
+  year        Int?
+  journal     String?
+  doi         String?
+  url         String?
+  abstract    String?
+  summary     String?  // Existing manual summary
+  
+  // --- NEW FIELDS ---
+  folder      String?  @default("Unsorted") // For organizing papers
+  aiSummary   String?  // Specifically for AI-generated text
+  userNotes   String?  // For your "highlighting/adding notes" feature
+  // ------------------
+
+  method      String?
+  topic       String?
+  status      String   @default("include")
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, doi])
+}
+
+// 1. FILE MODEL
+model File {
+  id           String   @id @default(cuid())
+  projectId    String
+  type         String   
+  name         String
+  url          String
+  size         Int
+  metadataJson String?
+  createdAt    DateTime @default(now())
+
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  datasets     Dataset[]
+  artifacts    Artifact[]
+}
+
+// 2. DATASET MODEL
+model Dataset {
+  id            String   @id @default(cuid())
+  projectId     String
+  fileId        String   @unique 
+  description   String?
+  
+  folder        String?  @default("Unsorted") // <--- NEW: For organizing datasets
+
+  license       String?
+  schemaJson    String?
+  piiFlag       Boolean  @default(false)
+  piiColumns    String[]
+  lastUpdated   DateTime @default(now())
+
+  project       Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  file          File       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  
+  artifacts     Artifact[]
+}
+
+model Survey {
+  id          String   @id @default(cuid())
+  projectId   String
+  title       String
+  schemaJson  String
+  status      String   @default("draft")
+  
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  responses   SurveyResponse[]
+}
+
+model SurveyResponse {
+  id        String   @id @default(cuid())
+  surveyId  String
+  dataJson  String
+  createdAt DateTime @default(now())
+
+  survey    Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+}
+
+// 3. EXPERIMENT MODEL
+model Experiment {
+  id           String   @id @default(cuid())
+  projectId    String
+  title        String
+  method       String?
+  metric       String?
+  conclusion   String?
+  hypothesis   String?
+  
+  folder       String?  @default("Unsorted") // <--- NEW: For organizing experiments
+
+  status       String   @default("planning")
+  startDate    DateTime @default(now())
+  endDate      DateTime?
+  
+  project      Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  logs         ExperimentLog[]
+}
+
+// 4. EXPERIMENT LOG MODEL
+model ExperimentLog {
+  id           String     @id @default(cuid())
+  experimentId String
+  message      String
+  type         String     @default("note")
+  hasEvidence  Boolean    @default(false)
+  fileName     String?
+  link         String?
+  isPinned     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  artifacts    Artifact[]
+}
+
+// 5. ARTIFACT MODEL
+model Artifact {
+  id              String   @id @default(cuid())
+  projectId       String
+  title           String
+  subtitle        String?
+  type            String
+  url             String?
+  color           String?
+  primaryFlag     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  fileId          String?
+  file            File?    @relation(fields: [fileId], references: [id])
+
+  datasetId       String?
+  dataset         Dataset? @relation(fields: [datasetId], references: [id])
+
+  experimentLogId String?
+  experimentLog   ExperimentLog? @relation(fields: [experimentLogId], references: [id])
+
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Audit {
+  id        String   @id @default(cuid())
+  entity    String
+  entityId  String
+  action    String
+  actorId   String
+  ts        DateTime @default(now())
+
+  actor     User     @relation(fields: [actorId], references: [id])
+}
