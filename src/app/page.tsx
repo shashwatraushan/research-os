@@ -1,6 +1,5 @@
 "use client";
 import { signIn, useSession, signOut } from "next-auth/react";
-import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import React, { useState, useEffect, useMemo, createContext, useContext, useRef, Suspense} from 'react';
 import { useSearchParams, useRouter } from 'next/navigation'; // <--- ADD THIS
 import { 
@@ -9,13 +8,20 @@ import {
   Trash2, Pencil, Maximize2, Paperclip, ExternalLink,
   FileText, Clock, AlertCircle, X, Sparkles, Loader2, Bot,
   ArrowRight, Filter, Users, ArrowUpDown, Sun, Moon, Key, Lock,
-  ClipboardList,Share2, UserIcon, Box, Atom, Brain, Cpu, Rocket, Microscope, Layers, Activity, GitBranch, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
+  ClipboardList, Share2, UserIcon, Box, Atom, Brain, Cpu, Rocket, Microscope, Layers, Activity, GitBranch, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
   MoreHorizontal, Link as LinkIcon, CheckSquare, PlayCircle, Zap, Shield, Globe, StopCircle, Archive, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, BarChart, Bar, XAxis, Tooltip, ResponsiveContainer 
 } from 'recharts';
+import { GiArchiveResearch } from "react-icons/gi";
 import NetworkBackground from "@/components/NetworkBackground";
+import dynamic from "next/dynamic"; // <--- ADD THIS LINE
+// Add Dynamic Import for v2
+const ReCAPTCHA = dynamic(() => import("react-google-recaptcha"), { 
+  ssr: false,
+  loading: () => <div className="h-[78px] w-[304px] bg-gray-800/50 rounded animate-pulse" />
+});
 
 /**
  * THEME SYSTEM
@@ -27,7 +33,7 @@ const DARK_THEME = {
   border: '#22262E',
   textMain: '#F7F8F8',
   textMuted: '#8A8F98',
-  accent: '#9333EA',
+  accent: '#6366F1',
   success: '#4ADE80',
   danger: '#F87171',
   warning: '#FBBF24',
@@ -205,7 +211,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 };
 
 /**
- * COMPONENT: LOGIN SCREEN (Updated with Google)
+ * COMPONENT: LOGIN SCREEN (Updated with reCAPTCHA v2)
  */
 const AuthScreen = ({ onLogin }) => {
   const { theme } = useTheme();
@@ -215,8 +221,9 @@ const AuthScreen = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  // Hooks for Real Auth
-  const { executeRecaptcha } = useGoogleReCaptcha();
+  // --- RECAPTCHA V2 STATE ---
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<any>(null);
 
   // Helper: Strong Password Check
   const validatePassword = (pwd) => {
@@ -229,14 +236,20 @@ const AuthScreen = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    // 1. Client-side Validation (Only for Signup)
+    // 1. Client-side Validation
     if (!isLogin) {
       if (!validatePassword(password)) {
         setError("Password must have 8+ chars, 1 uppercase, 1 number, and 1 special char.");
         return;
       }
-    }
 
+      // 2. Check CAPTCHA for Signup
+      if (!captchaToken) {
+        setError("Please complete the CAPTCHA verification.");
+        return;
+      }
+    }
+    
     setLoading(true);
 
     try {
@@ -254,19 +267,11 @@ const AuthScreen = ({ onLogin }) => {
           onLogin(); 
         }
       } else {
-        // --- SIGNUP LOGIC ---
-        if (!executeRecaptcha) {
-          setError("reCAPTCHA not ready");
-          setLoading(false);
-          return;
-        }
-
-        const token = await executeRecaptcha("signup");
-
+        // --- SIGNUP LOGIC (With v2 Token) ---
         const res = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, captchaToken: token }),
+          body: JSON.stringify({ email, password, captchaToken }), // Send v2 token
         });
 
         const data = await res.json();
@@ -279,6 +284,9 @@ const AuthScreen = ({ onLogin }) => {
       }
     } catch (err) {
       setError(err.message);
+      // Reset captcha on error so user can try again
+      recaptchaRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -286,17 +294,17 @@ const AuthScreen = ({ onLogin }) => {
 
   return (
     <div className="flex items-center justify-center min-h-screen relative overflow-hidden"> 
-    <NetworkBackground />
-    <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/30 blur-[120px] rounded-full pointer-events-none z-0"
+      <NetworkBackground />
+      <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/30 blur-[120px] rounded-full pointer-events-none z-0"
       />
-      <div className="w-full max-w-md p-8 rounded-xl shadow-2xl border relative z-10" 
-           style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
+      <div className="w-full max-w-md p-8 rounded-xl shadow-2xl border relative z-10 backdrop-blur-xl bg-[#161B22]/80" 
+           style={{ borderColor: theme.border }}>
         
         <div className="text-center mb-8">
           <div className="h-12 w-12 mx-auto mb-4 rounded-lg flex items-center justify-center" 
-               style={{ backgroundColor: theme.accent + '20' }}>
-            <FlaskConical size={24} color={theme.accent} />
+               style={{ backgroundColor: theme.accent }}>
+            <GiArchiveResearch size={35} color="white" />
           </div>
           <h1 className="text-2xl font-bold mb-2" style={{ color: theme.textMain }}>Research OS</h1>
           <p style={{ color: theme.textMuted }}>{isLogin ? 'Welcome back' : 'Create your lab'}</p>
@@ -368,6 +376,19 @@ const AuthScreen = ({ onLogin }) => {
             />
           </div>
 
+          {/* --- RECAPTCHA V2 WIDGET (Only for Signup) --- */}
+          {!isLogin && (
+            <div className="flex justify-center mb-2">
+                <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                    onChange={(token) => setCaptchaToken(token)}
+                    theme="dark" // Matches your dark mode theme
+                />
+            </div>
+          )}
+          {/* --------------------------------------------- */}
+
           <button 
             type="submit" 
             disabled={loading}
@@ -380,7 +401,7 @@ const AuthScreen = ({ onLogin }) => {
 
         <div className="mt-6 text-center">
           <button 
-            onClick={() => { setIsLogin(!isLogin); setError(''); }}
+            onClick={() => { setIsLogin(!isLogin); setError(''); setCaptchaToken(null); }}
             className="text-xs hover:underline"
             style={{ color: theme.textMuted }}
           >
@@ -388,9 +409,6 @@ const AuthScreen = ({ onLogin }) => {
           </button>
         </div>
         
-        <div className="mt-8 text-center text-[10px] opacity-40" style={{ color: theme.textMuted }}>
-           Protected by reCAPTCHA v3
-        </div>
       </div>
     </div>
   );
@@ -916,7 +934,7 @@ const ProjectSelectionScreen = ({
                         style={{ backgroundColor: theme.bgSidebar || theme.cardBg, borderColor: theme.border }}
                     >
                         {/* Accent Bar (Rounded Top) */}
-                        <div className="h-1.5 w-full rounded-t-xl" style={{ backgroundColor: proj.color || theme.accent }}></div>
+                        <div className="h-1.5 w-full rounded-t-xl" style={{ backgroundColor: theme.accent }}></div>
                         
                         <div className="p-6 h-full flex flex-col">
                             <div className="flex justify-between items-start mb-4">
@@ -997,7 +1015,7 @@ const ProjectSelectionScreen = ({
                                 <div className="flex items-center gap-3">
                                   {/* --- UPDATED AVATAR WITH LINK --- */}
                                   <div 
-                                  className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                                  className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"style={{ backgroundColor: theme.accent }}
                                   onClick={(e) => {
                                     e.stopPropagation(); 
                                     if (proj.owner?.id) {
@@ -1026,7 +1044,20 @@ const ProjectSelectionScreen = ({
             {/* Correctly displaying Summary if available, else Description */}
             <p className="text-sm leading-relaxed mb-4 whitespace-pre-wrap" style={{ color: theme.textMain }}>{proj.postSummary || proj.description}</p>
             
-            <div className="flex flex-wrap gap-2">{(proj.tags || []).map((tag, i) => <span key={i} className="text-xs px-2 py-1 rounded-md bg-blue-500/10 text-blue-500">#{tag.replace('#','')}</span>)}</div>
+            <div className="flex flex-wrap gap-2">
+  {(proj.tags || []).map((tag, i) => (
+    <span 
+      key={i} 
+      className="text-xs px-2 py-1 rounded-md"
+      style={{ 
+        backgroundColor: theme.accent + '20', // Adds 20% opacity to your accent color
+        color: theme.accent 
+      }}
+    >
+      #{tag.replace('#','')}
+    </span>
+  ))}
+</div>
         </div>
 
         {/* --- MODIFIED: SINGLE IMAGE SECTION --- */}
@@ -3825,7 +3856,7 @@ const LandingPage = ({ onLogin }) => {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="w-6 h-6 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-sm flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <FlaskConical size={12} className="text-white" />
+              <GiArchiveResearch size={19} className="text-white" />
             </div>
             <span className="font-bold text-lg tracking-tight text-white font-serif">ResearchOS</span>
           </div>
@@ -4108,7 +4139,7 @@ const LandingPage = ({ onLogin }) => {
            <div className="col-span-2">
               <div className="flex items-center gap-2 mb-6">
                   <div className="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
-                      <div className="w-2 h-2 bg-black rounded-full" />
+                      <GiArchiveResearch size={20} color="black"/>
                   </div>
                   <span className="font-bold text-xl text-white font-serif">ResearchOS</span>
               </div>

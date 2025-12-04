@@ -1,14 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* Force Google reCAPTCHA Badge to visible and top layer */
-/* --- FORCE RECAPTCHA BADGE VISIBILITY --- */
-.grecaptcha-badge { 
-  visibility: visible !important;
-  opacity: 1 !important;
-  z-index: 2147483647 !important; /* Max integer value */
-  position: fixed !important;
-  bottom: 14px !important;
-  right: 10px !important;
-  display: block !important; 
-}
