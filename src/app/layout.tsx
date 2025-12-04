@@ -19,9 +19,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* NUCLEAR FIX: Force reCAPTCHA Visibility */}
+        <style>{`
+          .grecaptcha-badge { 
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 2147483647 !important;
+            display: block !important;
+            position: fixed !important;
+            bottom: 14px !important;
+            right: 10px !important;
+            pointer-events: auto !important;
+          }
+        `}</style>
+      </head>
       <body className={inter.className}>
         <Providers>
-          <RecaptchaForce /> {/* <--- ADD THIS HERE */}
           {children}
         </Providers>
       </body>
