@@ -8,7 +8,7 @@ import {
   Trash2, Pencil, Maximize2, Paperclip, ExternalLink,
   FileText, Clock, AlertCircle, X, Sparkles, Loader2, Bot,
   ArrowRight, Filter, Users, ArrowUpDown, Sun, Moon, Key, Lock,
-  ClipboardList, Share2, UserIcon, Box, Atom, Brain, Cpu, Rocket, Microscope, Layers, Activity, GitBranch, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
+  ClipboardList, Linkedin, Share2, UserIcon, Box, Atom, Brain, Cpu, Rocket, Microscope, Layers, Activity, GitBranch, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
   MoreHorizontal, Link as LinkIcon, CheckSquare, PlayCircle, Zap, Shield, Globe, StopCircle, Archive, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { 
@@ -325,6 +325,15 @@ const AuthScreen = ({ onLogin }) => {
             </g>
           </svg>
           Continue with Google
+        </button>
+        {/* --- NEW: LINKEDIN LOGIN BUTTON --- */}
+        <button
+          onClick={() => signIn("linkedin")} 
+          className="w-full py-2.5 rounded-lg font-medium text-sm mb-6 flex items-center justify-center gap-3 transition-all hover:opacity-90 shadow-sm"
+          style={{ backgroundColor: "#0077B5", color: "#FFFFFF" }}
+        >
+          <Linkedin size={18} fill="currentColor" />
+          Continue with LinkedIn
         </button>
 
         <div className="flex items-center gap-4 mb-6">
