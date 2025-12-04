@@ -10,7 +10,6 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  // Extract new field
   const { projectId, title, assigneeId, dueDate, sendReminder } = body; 
 
   const task = await prisma.task.create({
@@ -18,9 +17,10 @@ export async function POST(req: Request) {
       projectId,
       title,
       status: "todo",
-      assigneeId: assigneeId || undefined,
+      // FIX: Default to current user if no assignee provided
+      assigneeId: assigneeId || session.user.id, 
       dueDate: dueDate ? new Date(dueDate) : undefined,
-      sendReminder: sendReminder || false, // Save the preference
+      sendReminder: sendReminder || false,
       reminderSent: false
     }
   });
