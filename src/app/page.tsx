@@ -8,8 +8,8 @@ import {
   Settings, Plus, Search, LogOut, ChevronRight, Check, 
   Trash2, Pencil, Maximize2, Paperclip, ExternalLink,
   FileText, Clock, AlertCircle, X, Sparkles, Loader2, Bot,
-  ArrowRight, Filter, ArrowUpDown, Sun, Moon, Key, Lock,
-  ClipboardList, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
+  ArrowRight, Filter, Users, ArrowUpDown, Sun, Moon, Key, Lock,
+  ClipboardList,Share2, Box, Atom, Brain, Cpu, Rocket, Microscope, Layers, Activity, GitBranch, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
   MoreHorizontal, Link as LinkIcon, CheckSquare, PlayCircle, Zap, Shield, Globe, StopCircle, Archive, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { 
@@ -204,9 +204,10 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 };
 
 /**
- * COMPONENT: LOGIN SCREEN (Updated)
+ * COMPONENT: LOGIN SCREEN (Updated with Google)
  */
 const AuthScreen = ({ onLogin }) => {
+  const { theme } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -282,40 +283,61 @@ const AuthScreen = ({ onLogin }) => {
     }
   };
 
-  const currentTheme = DARK_THEME; 
-
   return (
-    <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: currentTheme.bg }}>
+    <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: theme.bg }}>
       <div className="w-full max-w-md p-8 rounded-xl shadow-2xl border" 
-           style={{ backgroundColor: currentTheme.cardBg, borderColor: currentTheme.border }}>
+           style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
         
         <div className="text-center mb-8">
           <div className="h-12 w-12 mx-auto mb-4 rounded-lg flex items-center justify-center" 
-               style={{ backgroundColor: 'rgba(94, 106, 210, 0.2)' }}>
-            <FlaskConical size={24} color={currentTheme.accent} />
+               style={{ backgroundColor: theme.accent + '20' }}>
+            <FlaskConical size={24} color={theme.accent} />
           </div>
-          <h1 className="text-2xl font-bold mb-2" style={{ color: currentTheme.textMain }}>Research OS</h1>
-          <p style={{ color: currentTheme.textMuted }}>{isLogin ? 'Welcome back' : 'Create your lab'}</p>
+          <h1 className="text-2xl font-bold mb-2" style={{ color: theme.textMain }}>Research OS</h1>
+          <p style={{ color: theme.textMuted }}>{isLogin ? 'Welcome back' : 'Create your lab'}</p>
         </div>
 
+        {/* --- GOOGLE LOGIN BUTTON --- */}
+        <button
+          onClick={() => signIn("google")} 
+          className="w-full py-2.5 rounded-lg font-medium text-sm mb-6 flex items-center justify-center gap-3 transition-all hover:opacity-90 shadow-sm"
+          style={{ backgroundColor: "#FFFFFF", color: "#000000" }}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+            <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+              <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
+              <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z" />
+              <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z" />
+              <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z" />
+            </g>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div className="flex items-center gap-4 mb-6">
+           <div className="flex-1 h-[1px]" style={{ backgroundColor: theme.border }}></div>
+           <span className="text-xs font-medium uppercase opacity-50" style={{ color: theme.textMuted }}>Or</span>
+           <div className="flex-1 h-[1px]" style={{ backgroundColor: theme.border }}></div>
+        </div>
+
+        {/* EXISTING FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 rounded-md text-sm flex items-center gap-2 bg-red-900/30 text-red-200 border border-red-900">
+            <div className="p-3 rounded-md text-sm flex items-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20">
               <AlertCircle size={16} /> {error}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium mb-1.5 ml-1" style={{ color: currentTheme.textMuted }}>EMAIL</label>
+            <label className="block text-xs font-medium mb-1.5 ml-1" style={{ color: theme.textMuted }}>EMAIL</label>
             <input 
               type="email" 
               required
-              className="w-full p-3 rounded-lg text-sm border transition-all focus:ring-2 outline-none"
+              className="w-full p-3 rounded-lg text-sm border transition-all focus:ring-1 outline-none bg-transparent"
               style={{ 
-                backgroundColor: currentTheme.inputBg, 
-                borderColor: currentTheme.border, 
-                color: currentTheme.textMain,
-                '--tw-ring-color': currentTheme.accent 
+                borderColor: theme.border, 
+                color: theme.textMain,
+                '--tw-ring-color': theme.accent 
               }}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -323,19 +345,18 @@ const AuthScreen = ({ onLogin }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5 ml-1" style={{ color: currentTheme.textMuted }}>
+            <label className="block text-xs font-medium mb-1.5 ml-1" style={{ color: theme.textMuted }}>
                 PASSWORD 
                 {!isLogin && <span className="opacity-50 font-normal ml-1">(8+ chars, A-Z, 0-9, #$%)</span>}
             </label>
             <input 
               type="password" 
               required
-              className="w-full p-3 rounded-lg text-sm border transition-all focus:ring-2 outline-none"
+              className="w-full p-3 rounded-lg text-sm border transition-all focus:ring-1 outline-none bg-transparent"
               style={{ 
-                backgroundColor: currentTheme.inputBg, 
-                borderColor: currentTheme.border, 
-                color: currentTheme.textMain,
-                '--tw-ring-color': currentTheme.accent 
+                borderColor: theme.border, 
+                color: theme.textMain,
+                '--tw-ring-color': theme.accent 
               }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -346,7 +367,7 @@ const AuthScreen = ({ onLogin }) => {
             type="submit" 
             disabled={loading}
             className="w-full py-3 rounded-lg font-medium text-sm transition-all hover:opacity-90 flex justify-center items-center"
-            style={{ backgroundColor: currentTheme.accent, color: '#FFF' }}
+            style={{ backgroundColor: theme.accent, color: '#FFF' }}
           >
             {loading ? <Loader2 className="animate-spin" size={18} /> : (isLogin ? 'Log In' : 'Sign Up')}
           </button>
@@ -356,13 +377,13 @@ const AuthScreen = ({ onLogin }) => {
           <button 
             onClick={() => { setIsLogin(!isLogin); setError(''); }}
             className="text-xs hover:underline"
-            style={{ color: currentTheme.textMuted }}
+            style={{ color: theme.textMuted }}
           >
             {isLogin ? "Need an account? Sign up" : "Have an account? Log in"}
           </button>
         </div>
         
-        <div className="mt-8 text-center text-[10px] opacity-40" style={{ color: currentTheme.textMuted }}>
+        <div className="mt-8 text-center text-[10px] opacity-40" style={{ color: theme.textMuted }}>
            Protected by reCAPTCHA v3
         </div>
       </div>
@@ -371,29 +392,51 @@ const AuthScreen = ({ onLogin }) => {
 };
 
 /**
- * COMPONENT: CREATE PROJECT MODAL
+ * COMPONENT: CREATE / EDIT PROJECT MODAL (Updated)
  */
-const CreateProjectModal = ({ isOpen, onClose, onSubmit, theme }) => {
+const CreateProjectModal = ({ isOpen, onClose, onSubmit, theme, initialData = null }) => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Pre-fill data when editing
+  useEffect(() => {
+    if (isOpen && initialData) {
+        setTitle(initialData.title);
+        setDesc(initialData.description || "");
+    } else if (isOpen) {
+        // Reset if creating new
+        setTitle("");
+        setDesc("");
+    }
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
+    // Wait for the parent operation (Create or Update) to finish
     await onSubmit(title, desc);
+    
     setLoading(false);
-    setTitle("");
-    setDesc("");
+    
+    // Only clear fields if creating a NEW project.
+    // If editing, we keep the values so the UI doesn't jump before closing.
+    if (!initialData) {
+        setTitle("");
+        setDesc("");
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
       <div className="w-full max-w-md p-6 rounded-xl shadow-2xl border" 
            style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
-        <h2 className="text-lg font-medium mb-4" style={{ color: theme.textMain }}>New Project</h2>
+        <h2 className="text-lg font-medium mb-4" style={{ color: theme.textMain }}>
+            {initialData ? "Edit Project" : "New Project"}
+        </h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -435,7 +478,7 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit, theme }) => {
               style={{ backgroundColor: theme.accent, color: '#FFF' }}
             >
               {loading && <Loader2 className="animate-spin" size={12} />}
-              Create Project
+              {initialData ? "Save Changes" : "Create Project"}
             </button>
           </div>
         </form>
@@ -445,7 +488,7 @@ const CreateProjectModal = ({ isOpen, onClose, onSubmit, theme }) => {
 };
 
 /**
- * COMPONENT: PROJECT SELECTION SCREEN (With "Find your project" & Sorting)
+ * COMPONENT: PROJECT SELECTION SCREEN (Fixed & Updated)
  */
 const ProjectSelectionScreen = ({ 
   projects, 
@@ -453,18 +496,33 @@ const ProjectSelectionScreen = ({
   onOpenCreateModal,
   onLogout,
   toggleTheme,
-  isDarkMode
+  isDarkMode,
+  onRefreshProjects,
+  onEdit,   
+  onDelete 
 }) => {
   const { theme } = useTheme(); 
   
+  // --- VIEW STATE ---
+  const [viewMode, setViewMode] = useState('my'); // 'my' | 'explore'
+  
+  // --- COMMENT UI STATE ---
+  const [openCommentsId, setOpenCommentsId] = useState(null);
+  const [commentText, setCommentText] = useState("");
+  const [commentLoading, setCommentLoading] = useState(false);
+  
+  // Store the list of fetched comments
+  const [currentComments, setCurrentComments] = useState([]); 
+  const [fetchingComments, setFetchingComments] = useState(false);
+
   // --- SETTINGS STATE ---
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const menuRef = useRef(null);
 
-  // --- LOCAL SORT/FILTER STATE ---
+  // --- LOCAL SORT/FILTER STATE (My Projects) ---
   const [localSearch, setLocalSearch] = useState("");
-  const [sortBy, setSortBy] = useState('created'); // Default to 'created'
+  const [sortBy, setSortBy] = useState('created'); 
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = useRef(null);
 
@@ -475,37 +533,128 @@ const ProjectSelectionScreen = ({
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef(null);
 
+  // --- EXPLORE STATE (Public Feed) ---
+  const [publicProjects, setPublicProjects] = useState([]);
+  const [exploreLoading, setExploreLoading] = useState(false);
+  const [forkingId, setForkingId] = useState(null);
+  
   // --- PASSWORD LOGIC ---
   const [currPass, setCurrPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [passMsg, setPassMsg] = useState(""); 
   const [passLoading, setPassLoading] = useState(false);
+  
+  // --- MENU STATE (For Edit/Delete) ---
+  const [activeMenuId, setActiveMenuId] = useState(null);
 
-  // Close menus on outside click
+  // --- CLICK OUTSIDE LISTENER (FIXED) ---
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) setShowSettings(false);
-      if (searchRef.current && !searchRef.current.contains(event.target)) setIsSearchOpen(false);
-      if (sortRef.current && !sortRef.current.contains(event.target)) setIsSortOpen(false);
+      // 1. Close Settings Menu (Only if clicked outside the container)
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsSettingsOpen(false);
+      }
+
+      // 2. Close Search
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchOpen(false);
+      }
+
+      // 3. Close Sort Dropdown
+      if (sortRef.current && !sortRef.current.contains(event.target)) {
+        setIsSortOpen(false);
+      }
+
+      // 4. Close Project Card Menus (CRITICAL FIX)
+      // Only close if the click is NOT inside the menu popup
+      if (!event.target.closest('.project-menu-popup')) {
+          setActiveMenuId(null);
+      }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // --- LOGIC: FILTER & SORT PROJECTS ---
+  const handleMenuToggle = (id, e) => {
+      e.stopPropagation();
+      // If clicking the same one, close it. If different, open new one.
+      setActiveMenuId(activeMenuId === id ? null : id);
+  };
+
+  // --- FETCH PUBLIC FEED ---
+  useEffect(() => {
+    if (viewMode === 'explore') {
+        setExploreLoading(true);
+        fetch('/api/projects/public')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) setPublicProjects(data);
+            })
+            .catch(err => console.error("Failed to fetch feed:", err))
+            .finally(() => setExploreLoading(false));
+    }
+  }, [viewMode]);
+  
+  // --- FETCH COMMENTS ---
+  useEffect(() => {
+    if (openCommentsId) {
+        setFetchingComments(true);
+        fetch(`/api/projects/comments?projectId=${openCommentsId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) setCurrentComments(data);
+            })
+            .finally(() => setFetchingComments(false));
+    } else {
+        setCurrentComments([]); 
+    }
+  }, [openCommentsId]);
+  
+  // --- FORK HANDLER ---
+  const handleForkProject = async (proj, e) => {
+      e.stopPropagation();
+      if (!confirm(`Fork "${proj.title}" to your workspace?`)) return;
+      
+      setForkingId(proj.id);
+      
+      try {
+          const res = await fetch('/api/projects/fork', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ originalProjectId: proj.id })
+          });
+          
+          if (!res.ok) throw new Error("Fork failed");
+          
+          const newProject = await res.json();
+          if (onRefreshProjects) await onRefreshProjects();
+          alert(`Project forked! You are now the owner of "${newProject.title}".`);
+          setViewMode('my'); 
+      } catch (err) {
+          alert("Error forking project.");
+      } finally {
+          setForkingId(null);
+      }
+  };
+
+  // --- LOGIC: SPLIT INVITES vs ACTIVE ---
+  const myInvites = useMemo(() => {
+    return projects.filter(p => p.myStatus === 'invited');
+  }, [projects]);
+
+  // Filter Active Projects for the Grid
   const processedProjects = useMemo(() => {
-    return projects
+    const active = projects.filter(p => p.myStatus !== 'invited');
+
+    return active
       .filter(p => {
-         // Filter by Title or Description
          const searchLower = localSearch.toLowerCase();
          return p.title.toLowerCase().includes(searchLower) || 
                 (p.description && p.description.toLowerCase().includes(searchLower));
       })
       .sort((a, b) => {
-         // Sort Logic
          if (sortBy === 'alpha') return a.title.localeCompare(b.title);
-         
-         // Default: Created Date (Newest First)
          return new Date(b.createdAt) - new Date(a.createdAt);
       });
   }, [projects, localSearch, sortBy]);
@@ -532,8 +681,28 @@ const ProjectSelectionScreen = ({
     if (parentProject) {
         onSelectProject(parentProject); 
     } else {
-        alert("Project not found locally. Try refreshing.");
+        alert("Project not found locally.");
     }
+  };
+
+  // --- ACCEPT INVITE HANDLER ---
+  const handleAcceptInvite = async (proj) => {
+      const memberRecord = proj.members?.[0]; 
+      if (!memberRecord?.id) {
+          alert("Error: Member ID missing.");
+          return;
+      }
+      if(!confirm(`Accept invitation to join "${proj.title}"?`)) return;
+
+      try {
+          const res = await fetch('/api/members', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: memberRecord.id, status: 'active' })
+          });
+          if (!res.ok) throw new Error("Failed to join");
+          if (onRefreshProjects) onRefreshProjects();
+      } catch (e) { alert("Error accepting invite."); }
   };
 
   const handleChangePassword = async () => {
@@ -553,6 +722,62 @@ const ProjectSelectionScreen = ({
     finally { setPassLoading(false); }
   };
   
+  // --- INTERACTION HANDLERS ---
+  const handleLike = async (proj, e) => {
+      e.stopPropagation();
+      const wasLiked = proj.isLikedByMe;
+      const newLikedState = !wasLiked;
+      const newCount = (proj._count?.likes || 0) + (newLikedState ? 1 : -1);
+
+      const updatedFeed = publicProjects.map(p => {
+          if (p.id === proj.id) {
+              return { ...p, isLikedByMe: newLikedState, _count: { ...p._count, likes: newCount } };
+          }
+          return p;
+      });
+      setPublicProjects(updatedFeed);
+
+      try {
+          await fetch('/api/projects/interact', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ projectId: proj.id, type: 'like' })
+          });
+      } catch (err) { console.error("Like failed"); }
+  };
+
+  const handleToggleComments = (projId, e) => {
+      e.stopPropagation();
+      if (openCommentsId === projId) {
+          setOpenCommentsId(null);
+      } else {
+          setOpenCommentsId(projId);
+          setCommentText("");
+      }
+  };
+
+  const handleSubmitComment = async (projId, e) => {
+      e.stopPropagation(); 
+      if (!commentText.trim()) return;
+      setCommentLoading(true);
+      try {
+          const res = await fetch('/api/projects/interact', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ projectId: projId, type: 'comment', text: commentText })
+          });
+          if (!res.ok) throw new Error("Failed to comment");
+          const newComment = await res.json();
+          setCurrentComments([newComment, ...currentComments]);
+          const updatedFeed = publicProjects.map(p => 
+              p.id === projId ? { ...p, _count: { ...p._count, comments: (p._count.comments || 0) + 1 } } : p
+          );
+          setPublicProjects(updatedFeed);
+          setCommentText("");
+      } catch (err) { alert("Failed to comment"); } 
+      finally { setCommentLoading(false); }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-start pt-24 font-sans animate-in fade-in duration-700 transition-colors duration-300 relative" style={{ backgroundColor: theme.bg }}>
       
@@ -560,71 +785,29 @@ const ProjectSelectionScreen = ({
       <div ref={searchRef} className={`absolute top-6 right-6 z-50 flex items-center justify-end transition-all duration-300 ${isSearchOpen ? 'w-full max-w-md' : 'w-auto'}`}>
         <div 
             className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all duration-300 shadow-sm border overflow-hidden ${isSearchOpen ? 'w-full ring-1 ring-gray-500/20' : 'w-auto hover:bg-white/5 bg-transparent border-transparent hover:border-gray-500/20 cursor-pointer'}`}
-            style={{ 
-                borderColor: isSearchOpen ? theme.border : 'transparent',
-                backgroundColor: isSearchOpen ? theme.cardBg : 'transparent'
-            }}
+            style={{ borderColor: isSearchOpen ? theme.border : 'transparent', backgroundColor: isSearchOpen ? theme.cardBg : 'transparent' }}
             onClick={() => setIsSearchOpen(true)}
         >
             <Zap size={18} color={theme.textMuted} className="shrink-0" />
-            
             {isSearchOpen ? (
-                <input 
-                    autoFocus
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search across all projects..."
-                    className="bg-transparent border-none outline-none text-sm w-full min-w-[200px]"
-                    style={{ color: theme.textMain }}
-                />
-            ) : (
-                <span className="text-sm opacity-50 select-none hidden sm:block" style={{ color: theme.textMuted }}>Global Search</span>
-            )}
-
-            {isSearchOpen && (
-                <div className="flex items-center gap-2 shrink-0">
-                    {isSearching ? <Loader2 size={14} className="animate-spin opacity-50"/> : null}
-                    <button onClick={(e) => { e.stopPropagation(); setSearchQuery(""); setIsSearchOpen(false); }} className="hover:opacity-100 opacity-50">
-                        <X size={14} color={theme.textMuted}/>
-                    </button>
-                </div>
-            )}
+                <input autoFocus value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search across all projects..." className="bg-transparent border-none outline-none text-sm w-full min-w-[200px]" style={{ color: theme.textMain }} />
+            ) : <span className="text-sm opacity-50 select-none hidden sm:block" style={{ color: theme.textMuted }}>Global Search</span>}
+            {isSearchOpen && <div className="flex items-center gap-2 shrink-0"><Loader2 className={isSearching ? "animate-spin" : "hidden"} size={14} /><button onClick={(e) => { e.stopPropagation(); setSearchQuery(""); setIsSearchOpen(false); }}><X size={14} color={theme.textMuted}/></button></div>}
         </div>
-
-        {/* RESULTS DROPDOWN */}
+        {/* Search Dropdown */}
         {isSearchOpen && searchResults && searchQuery && (
             <div className="absolute top-full right-0 w-full mt-2 rounded-xl border shadow-xl overflow-hidden max-h-96 overflow-y-auto z-50 animate-in fade-in slide-in-from-top-2" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
-                
-                {Object.values(searchResults).every(arr => !arr || arr.length === 0) && (
-                    <div className="p-4 text-center text-xs opacity-50" style={{ color: theme.textMuted }}>No results found across projects.</div>
-                )}
-
-                {['papers', 'tasks', 'experiments', 'datasets', 'artifacts'].map(category => {
-                    const items = searchResults[category];
-                    if (!items || items.length === 0) return null;
-                    
+                {['papers', 'tasks', 'experiments', 'datasets', 'artifacts'].map(cat => {
+                    const items = searchResults[cat];
+                    if (!items?.length) return null;
                     return (
-                        <div key={category} className="p-2 border-b last:border-0" style={{ borderColor: theme.border }}>
-                            <div className="text-[10px] font-bold uppercase tracking-wider opacity-50 px-2 mb-1" style={{ color: theme.textMuted }}>{category}</div>
+                        <div key={cat} className="p-2 border-b last:border-0" style={{ borderColor: theme.border }}>
+                            <div className="text-[10px] font-bold uppercase tracking-wider opacity-50 px-2 mb-1">{cat}</div>
                             {items.map(item => (
-                                <div 
-                                    key={item.id} 
-                                    onClick={() => handleResultClick(item)} 
-                                    className="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer text-sm transition-colors group"
-                                >
-                                    {category === 'papers' && <BookOpen size={14} style={{ color: theme.textMuted }} className="opacity-50"/>}
-                                    {category === 'tasks' && <Check size={14} style={{ color: theme.textMuted }} className="opacity-50"/>}
-                                    {category === 'experiments' && <FlaskConical size={14} style={{ color: theme.textMuted }} className="opacity-50"/>}
-                                    {category === 'datasets' && <Database size={14} style={{ color: theme.textMuted }} className="opacity-50"/>}
-                                    {category === 'artifacts' && <FileText size={14} style={{ color: theme.textMuted }} className="opacity-50"/>}
-                                    
+                                <div key={item.id} onClick={() => handleResultClick(item)} className="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer text-sm transition-colors group">
                                     <div className="flex flex-col min-w-0 text-left">
-                                        <span className="truncate font-medium" style={{color: theme.textMain}}>
-                                            {category === 'datasets' ? item.file?.name : item.title}
-                                        </span>
-                                        <span className="text-[10px] opacity-40 truncate" style={{ color: theme.textMuted }}>
-                                            In: {projects.find(p => p.id === item.projectId)?.title || "Unknown Project"}
-                                        </span>
+                                        <span className="truncate font-medium" style={{color: theme.textMain}}>{cat === 'datasets' ? item.file?.name : item.title}</span>
+                                        <span className="text-[10px] opacity-40 truncate" style={{ color: theme.textMuted }}>In: {projects.find(p => p.id === item.projectId)?.title || "Unknown"}</span>
                                     </div>
                                     <ArrowRight size={12} className="ml-auto opacity-0 group-hover:opacity-50" style={{ color: theme.textMuted }} />
                                 </div>
@@ -636,136 +819,209 @@ const ProjectSelectionScreen = ({
         )}
       </div>
 
-      {/* --- HEADER + LOCAL FILTER TOOLBAR --- */}
+      {/* --- HEADER --- */}
       <div className="w-full max-w-5xl px-6 mb-8 flex flex-col md:flex-row justify-between items-end gap-6">
-        
-        {/* Title Area */}
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center border shadow-sm" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
-                <LayoutGrid size={20} color={theme.textMain} />
-            </div>
-            <h1 className="text-2xl font-medium tracking-tight" style={{ color: theme.textMain }}>Select a Project</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-4" style={{ color: theme.textMain }}>Dashboard</h1>
+          <div className="flex gap-6 border-b" style={{ borderColor: theme.border }}>
+             <button onClick={() => setViewMode('my')} className={`pb-2 text-sm font-medium transition-colors border-b-2 ${viewMode === 'my' ? 'border-current' : 'border-transparent opacity-50'}`} style={{ color: viewMode === 'my' ? theme.accent : theme.textMain }}>My Projects</button>
+             <button onClick={() => setViewMode('explore')} className={`pb-2 text-sm font-medium transition-colors border-b-2 ${viewMode === 'explore' ? 'border-current' : 'border-transparent opacity-50'}`} style={{ color: viewMode === 'explore' ? theme.accent : theme.textMain }}>Explore Public</button>
           </div>
-          <p className="text-sm" style={{ color: theme.textMuted }}>{processedProjects.length} projects found</p>
         </div>
 
-        {/* --- NEW TOOLBAR: SORT & FIND --- */}
-        <div className="flex items-center gap-3 p-1 rounded-xl border" style={{ borderColor: theme.border, backgroundColor: theme.cardBg }}>
-            
-            {/* Find Your Project Input */}
-            <div className="relative group flex items-center">
-                <Search size={14} className="absolute left-3 opacity-50" style={{ color: theme.textMuted }}/>
-                <input 
-                    value={localSearch}
-                    onChange={(e) => setLocalSearch(e.target.value)}
-                    placeholder="Find your project..."
-                    className="pl-8 pr-3 py-1.5 text-sm bg-transparent outline-none w-40 focus:w-56 transition-all"
-                    style={{ color: theme.textMain }}
-                />
-            </div>
-
-            <div className="h-4 w-[1px]" style={{ backgroundColor: theme.border }}></div>
-
-            {/* Sort Dropdown */}
-            <div className="relative" ref={sortRef}>
-                <button 
-                    onClick={() => setIsSortOpen(!isSortOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors hover:bg-gray-500/10"
-                    style={{ color: theme.textMuted }}
-                >
-                    <ArrowUpDown size={12} />
-                    <span className="capitalize">
-                        {sortBy === 'created' ? 'Date Created' : 'Alphabetical'}
-                    </span>
-                </button>
-
-                {isSortOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-40 rounded-xl border shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
-                        {[
-                            { id: 'created', label: 'Date Created' },
-                            { id: 'alpha', label: 'Alphabetical' }
-                        ].map(opt => (
-                            <button
-                                key={opt.id}
-                                onClick={() => { setSortBy(opt.id); setIsSortOpen(false); }}
-                                className="w-full text-left px-4 py-2 text-xs hover:bg-gray-500/10 transition-colors flex items-center justify-between"
-                                style={{ color: sortBy === opt.id ? theme.accent : theme.textMain }}
-                            >
-                                {opt.label}
-                                {sortBy === opt.id && <Check size={12} />}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
-      </div>
-
-      {/* GRID */}
-      <div className="w-full max-w-5xl px-6 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          {/* Create New Card */}
-          {/* Only show "Create New" if we aren't heavily filtering, or just keep it as the first item always */}
-          {!localSearch && (
-              <div 
-                onClick={onOpenCreateModal} 
-                className="group cursor-pointer rounded-xl border border-dashed flex flex-col items-center justify-center gap-4 transition-all hover:bg-white/5"
-                style={{ borderColor: theme.border, minHeight: '220px', backgroundColor: 'transparent' }}
-              >
-                 <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: theme.hover }}>
-                   <Plus size={20} color={theme.textMuted} />
-                 </div>
-                 <span className="text-sm font-medium" style={{ color: theme.textMuted }}>Create New Project</span>
-              </div>
-          )}
-
-          {/* Mapped Projects */}
-          {processedProjects.map((proj) => (
-            <div 
-              key={proj.id}
-              onClick={() => onSelectProject(proj)} 
-              className="group cursor-pointer rounded-xl p-1 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-              style={{ backgroundColor: theme.bgSidebar || theme.cardBg, borderColor: theme.border }}
-            >
-              <div 
-                className="h-full rounded-lg p-6 flex flex-col relative overflow-hidden border border-transparent" 
-                style={{ backgroundColor: theme.cardBg }}
-              >
-                <div className="absolute top-0 left-0 right-0 h-1 transition-all group-hover:h-1.5" style={{ backgroundColor: proj.color || theme.accent }}></div>
-                
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center border font-bold text-sm" style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.textMain }}>
-                    {proj.title.substring(0, 1).toUpperCase()}
-                  </div>
-                  <span className="text-[10px] opacity-40 font-mono" style={{ color: theme.textMuted }}>
-                    {/* Safe Date Rendering */}
-                    {new Date(proj.createdAt).toLocaleDateString()}
-                  </span>
+        {/* Local Filter Toolbar */}
+        {viewMode === 'my' && (
+            <div className="flex items-center gap-3 p-1 rounded-xl border" style={{ borderColor: theme.border, backgroundColor: theme.cardBg }}>
+                <div className="relative group flex items-center">
+                    <Search size={14} className="absolute left-3 opacity-50" style={{ color: theme.textMuted }}/>
+                    <input value={localSearch} onChange={(e) => setLocalSearch(e.target.value)} placeholder="Filter..." className="pl-8 pr-3 py-1.5 text-sm bg-transparent outline-none w-40 focus:w-56 transition-all" style={{ color: theme.textMain }} />
                 </div>
-
-                <h3 className="text-base font-medium mb-2 truncate" style={{ color: theme.textMain }}>{proj.title}</h3>
-                <p className="text-xs leading-relaxed mb-8 flex-1 line-clamp-3 opacity-80" style={{ color: theme.textMuted }}>
-                  {proj.description || "No description provided."}
-                </p>
-
-                <div className="flex items-center gap-2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0" style={{ color: proj.color || theme.accent }}>
-                  Open Project <ArrowRight size={12} />
+                <div className="h-4 w-[1px]" style={{ backgroundColor: theme.border }}></div>
+                <div className="relative" ref={sortRef}>
+                    <button onClick={() => setIsSortOpen(!isSortOpen)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors hover:bg-gray-500/10" style={{ color: theme.textMuted }}>
+                        <ArrowUpDown size={12} /><span className="capitalize">{sortBy === 'created' ? 'Date' : 'Alpha'}</span>
+                    </button>
+                    {isSortOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-32 rounded-xl border shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
+                            {[{ id: 'created', label: 'Date' }, { id: 'alpha', label: 'Alpha' }].map(opt => (
+                                <button key={opt.id} onClick={() => { setSortBy(opt.id); setIsSortOpen(false); }} className="w-full text-left px-4 py-2 text-xs hover:bg-gray-500/10 transition-colors flex items-center justify-between" style={{ color: sortBy === opt.id ? theme.accent : theme.textMain }}>
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {processedProjects.length === 0 && localSearch && (
-            <div className="text-center py-20 opacity-50 text-sm" style={{ color: theme.textMuted }}>
-                No projects found matching "{localSearch}"
             </div>
         )}
       </div>
 
-      {/* --- FLOATING SETTINGS MENU --- */}
+      {/* --- CONTENT GRID --- */}
+      <div className="w-full max-w-5xl px-6 pb-20 space-y-8">
+        
+        {/* INVITES SECTION */}
+        {viewMode === 'my' && myInvites.length > 0 && (
+            <div className="p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/5 animate-in slide-in-from-top-2">
+                <h3 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: theme.warning }}><Bell size={16} /> Pending Invites ({myInvites.length})</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {myInvites.map(proj => (
+                        <div key={proj.id} className="flex justify-between items-center p-4 rounded-lg border" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
+                            <div><h4 className="font-medium text-sm" style={{ color: theme.textMain }}>{proj.title}</h4><p className="text-xs opacity-50" style={{ color: theme.textMuted }}>Invitation pending.</p></div>
+                            <button onClick={(e) => handleAcceptInvite(proj)} className="px-3 py-1.5 text-xs font-bold rounded text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: theme.accent }}>Accept</button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          {/* MY PROJECTS VIEW */}
+          {viewMode === 'my' && (
+            <>
+                {!localSearch && (
+                    <div onClick={onOpenCreateModal} className="group cursor-pointer rounded-xl border border-dashed flex flex-col items-center justify-center gap-4 transition-all hover:bg-white/5 min-h-[220px]" style={{ borderColor: theme.border }}>
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: theme.hover }}><Plus size={20} color={theme.textMuted} /></div>
+                        <span className="text-sm font-medium" style={{ color: theme.textMuted }}>Create New Project</span>
+                    </div>
+                )}
+
+                {processedProjects.map((proj) => (
+                    <div 
+                        key={proj.id}
+                        onClick={() => onSelectProject(proj)} 
+                        className={`group cursor-pointer rounded-xl p-0 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl relative ${activeMenuId === proj.id ? 'z-50' : 'z-0'}`}
+                        style={{ backgroundColor: theme.bgSidebar || theme.cardBg, borderColor: theme.border }}
+                    >
+                        {/* Accent Bar (Rounded Top) */}
+                        <div className="h-1.5 w-full rounded-t-xl" style={{ backgroundColor: proj.color || theme.accent }}></div>
+                        
+                        <div className="p-6 h-full flex flex-col">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="w-10 h-10 rounded-md flex items-center justify-center border font-bold text-sm" style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.textMain }}>
+                                    {proj.title.substring(0, 1).toUpperCase()}
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                    {proj.isPublic && <Globe size={14} className="text-green-500" title="Publicly Visible"/>}
+                                    <span className="text-[10px] opacity-40 font-mono" style={{ color: theme.textMuted }}>{new Date(proj.createdAt).toLocaleDateString()}</span>
+
+                                    {/* OPTIONS MENU (EDIT/DELETE) */}
+                                    {proj.myRole === 'OWNER' && (
+                                        <div className="relative ml-1" onClick={(e) => e.stopPropagation()}>
+                                            <button 
+                                                onClick={(e) => handleMenuToggle(proj.id, e)}
+                                                className="p-1.5 rounded hover:bg-white/10 text-gray-500 hover:text-white transition-colors"
+                                            >
+                                                <MoreHorizontal size={16} />
+                                            </button>
+                                            
+                                            {activeMenuId === proj.id && (
+                                              <div 
+                                              className="project-menu-popup absolute right-0 top-full mt-1 w-32 rounded-lg shadow-xl border overflow-hidden z-50 animate-in fade-in zoom-in-95" 
+                                              style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}
+                                              onClick={(e) => e.stopPropagation()}
+                                              >
+                                                <button
+                                                onClick={(e) => { 
+                                                  e.stopPropagation(); 
+                                                  setActiveMenuId(null); 
+                                                  onEdit(proj); 
+                                                }}
+                                                className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 transition-colors flex items-center gap-2"
+                                                style={{ color: theme.textMain }}
+                                                >
+                                                  <Pencil size={12}/> Edit
+                                                  </button>
+                                                  <button
+                                                  onClick={(e) => { 
+                                                    e.stopPropagation(); 
+                                                    setActiveMenuId(null);
+                                                    onDelete(proj.id); 
+                                                  }}
+                                                  className="w-full text-left px-3 py-2 text-xs hover:bg-red-500/10 text-red-500 transition-colors flex items-center gap-2"
+                                                  >
+                                                    <Trash2 size={12}/> Delete
+                                                    </button>
+                                                    </div>
+                                                  )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <h3 className="text-base font-medium mb-2 truncate" style={{ color: theme.textMain }}>{proj.title}</h3>
+                            <p className="text-xs leading-relaxed mb-8 flex-1 line-clamp-3 opacity-80" style={{ color: theme.textMuted }}>{proj.description || "No description provided."}</p>
+                            <div className="flex items-center gap-2 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity mt-auto" style={{ color: proj.color || theme.accent }}>
+                                Open Project <ArrowRight size={12} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </>
+          )}
+
+          {/* EXPLORE VIEW (SOCIAL FEED) */}
+          {viewMode === 'explore' && (
+             <>
+                {exploreLoading ? (
+                    <div className="col-span-full py-20 text-center opacity-50 flex flex-col items-center gap-3"><Loader2 className="animate-spin" size={24} /><span className="text-xs">Fetching feed...</span></div>
+                ) : (
+                    <div className="max-w-2xl mx-auto space-y-8 w-full col-span-full">
+                        {publicProjects.map((proj) => (
+                            <div key={proj.id} className="rounded-xl border overflow-hidden transition-all hover:shadow-lg" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
+                                <div className="p-6 border-b" style={{ borderColor: theme.border }}>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">{proj.owner?.name?.[0]?.toUpperCase() || "U"}</div>
+                                            <div><h3 className="font-bold text-base" style={{ color: theme.textMain }}>{proj.postHeading || proj.title}</h3><p className="text-xs opacity-60" style={{ color: theme.textMuted }}>{proj.owner?.name || "Researcher"} • {new Date(proj.publishedAt || proj.updatedAt).toLocaleDateString()}</p></div>
+                                        </div>
+                                        <button onClick={() => onSelectProject(proj)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border hover:bg-white/5 transition-colors" style={{ borderColor: theme.border, color: theme.textMain }}>View Project <ArrowRight size={12}/></button>
+                                    </div>
+                                    <p className="text-sm leading-relaxed mb-4 whitespace-pre-wrap" style={{ color: theme.textMain }}>{proj.postSummary || proj.description}</p>
+                                    <div className="flex flex-wrap gap-2">{(proj.tags || []).map((tag, i) => <span key={i} className="text-xs px-2 py-1 rounded-md bg-blue-500/10 text-blue-500">#{tag.replace('#','')}</span>)}</div>
+                                </div>
+
+                                {/* Collage */}
+                                {proj.artifacts && proj.artifacts.length > 0 && (
+                                    <div className="h-64 bg-black/50 grid grid-cols-2 gap-0.5 cursor-pointer border-b" style={{ borderColor: theme.border }} onClick={() => onSelectProject(proj)}>
+                                        <div className="relative h-full bg-gray-900 overflow-hidden">{proj.artifacts[0] && <img src={proj.artifacts[0].url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />}</div>
+                                        <div className="grid grid-rows-2 gap-0.5 h-full">
+                                            <div className="relative bg-gray-900 h-full overflow-hidden">{proj.artifacts[1] && <img src={proj.artifacts[1].url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />}</div>
+                                            <div className="relative bg-gray-900 h-full overflow-hidden">{proj.artifacts[2] && <img src={proj.artifacts[2].url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />}{proj.artifacts.length > 3 && <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-sm backdrop-blur-sm">+{proj.artifacts.length - 3}</div>}</div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Footer Actions */}
+                                <div className="p-4 flex items-center gap-6 text-xs border-t relative" style={{ color: theme.textMuted, borderColor: theme.border }}>
+                                    <button onClick={(e) => handleLike(proj, e)} className={`flex items-center gap-2 transition-colors group ${proj.isLikedByMe ? 'text-red-500' : 'hover:text-red-500'}`}><div className={`p-1.5 rounded-full transition-colors ${proj.isLikedByMe ? 'bg-red-500/10' : 'group-hover:bg-red-500/10'}`}><CheckCircle2 size={16} className={proj.isLikedByMe ? "fill-current" : ""} /></div>{proj._count?.likes || 0} Likes</button>
+                                    <button onClick={(e) => handleToggleComments(proj.id, e)} className={`flex items-center gap-2 transition-colors group ${openCommentsId === proj.id ? 'text-blue-500' : 'hover:text-blue-500'}`}><div className={`p-1.5 rounded-full transition-colors ${openCommentsId === proj.id ? 'bg-blue-500/10' : 'group-hover:bg-blue-500/10'}`}><FileText size={16} /></div>{proj._count?.comments || 0} Comments</button>
+                                    <button onClick={(e) => handleForkProject(proj, e)} disabled={forkingId === proj.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full border hover:bg-white/5 transition-colors disabled:opacity-50 ml-auto" style={{ borderColor: theme.border, color: theme.textMain }}>{forkingId === proj.id ? <Loader2 size={14} className="animate-spin"/> : <Share2 size={14} />}<span className="font-medium">{forkingId === proj.id ? "Forking..." : "Fork"}</span></button>
+                                </div>
+
+                                {/* Comments */}
+                                {openCommentsId === proj.id && (
+                                    <div className="border-t p-4 animate-in slide-in-from-top-2" style={{ borderColor: theme.border, backgroundColor: theme.cardBg }}>
+                                        <div className="max-h-48 overflow-y-auto mb-3 custom-scrollbar space-y-3">
+                                            {fetchingComments ? <div className="text-center py-4 opacity-50 flex items-center justify-center gap-2"><Loader2 size={12} className="animate-spin"/> Loading...</div> : currentComments.length === 0 ? <div className="text-center py-4 opacity-50 text-xs">No comments yet.</div> : currentComments.map(c => (
+                                                <div key={c.id} className="flex gap-2 items-start"><div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0">{c.user?.name?.[0] || "?"}</div><div className="flex-1 min-w-0"><div className="flex items-baseline gap-2"><span className="text-xs font-bold" style={{ color: theme.textMain }}>{c.user?.name}</span><span className="text-[9px] opacity-40">{new Date(c.createdAt).toLocaleDateString()}</span></div><p className="text-xs mt-0.5" style={{ color: theme.textMain }}>{c.text}</p></div></div>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2 pt-2 border-t" style={{ borderColor: theme.border }} onClick={(e) => e.stopPropagation()}>
+                                            <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write a comment..." className="flex-1 bg-transparent border rounded px-3 py-2 text-xs outline-none focus:ring-1 transition-all" style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }} onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(proj.id, e); }}}/>
+                                            <button onClick={(e) => handleSubmitComment(proj.id, e)} disabled={!commentText.trim() || commentLoading} className="px-3 py-1 rounded text-white text-xs font-bold disabled:opacity-50 transition-opacity" style={{ backgroundColor: theme.accent }}>{commentLoading ? <Loader2 size={12} className="animate-spin"/> : "Post"}</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+             </>
+          )}
+        </div>
+      </div>
+
+      {/* --- FLOATING SETTINGS MENU (FIXED) --- */}
       <div className="fixed bottom-6 left-6 z-50" ref={menuRef}>
         
         {isSettingsOpen && (
@@ -868,9 +1124,9 @@ const ProjectSelectionScreen = ({
 };
 
 /**
- * SUB-COMPONENT: SIDEBAR (Updated)
+ * SUB-COMPONENT: SIDEBAR (Updated with Permissions & Project Settings)
  */
-const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout, onOpenSettings }) => {
+const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout, onOpenSettings, permissions }) => {
   const { theme, toggleTheme, isDarkMode } = useTheme();
   
   // UI State
@@ -930,19 +1186,24 @@ const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout,
         className="fixed left-0 top-0 bottom-0 w-[240px] flex flex-col border-r z-20 transition-colors duration-300"
         style={{ backgroundColor: theme.bgSidebar, borderColor: theme.border }}
       >
-        {/* Workspace Switcher */}
+        {/* Workspace Switcher / Header */}
         <div className="h-14 flex items-center px-4 border-b" style={{ borderColor: theme.border }}>
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity w-full">
+          <div className="flex items-center gap-3 w-full">
             <div 
               className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold shrink-0"
               style={{ backgroundColor: projectColor || theme.accent }}
             >
               {projectName ? projectName.substring(0,1) : 'N'}
             </div>
-            <span className="text-sm font-medium tracking-tight truncate" style={{ color: theme.textMain }}>
-              {projectName || 'Neuro Lab'}
-            </span>
-            <ChevronRight size={14} className="ml-auto opacity-50 shrink-0" color={theme.textMuted} />
+            <div className="flex flex-col min-w-0">
+                <span className="text-sm font-medium tracking-tight truncate" style={{ color: theme.textMain }}>
+                  {projectName || 'Neuro Lab'}
+                </span>
+                {/* Role Badge */}
+                <span className="text-[9px] opacity-50 uppercase tracking-wider font-bold" style={{ color: theme.textMuted }}>
+                    {permissions?.isOwner ? 'Owner' : 'Member'}
+                </span>
+            </div>
           </div>
         </div>
 
@@ -985,19 +1246,33 @@ const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout,
                         {isDarkMode ? <Sun size={14}/> : <Moon size={14}/>}
                         {isDarkMode ? "Light Mode" : "Dark Mode"}
                     </button>
+                    
+                    {/* NEW: Manage Project Button (Only if allowed) */}
+                    {(permissions?.canManageTeam || permissions?.isOwner) && (
+                        <button 
+                            onClick={() => { onOpenSettings(); setShowSettings(false); }}
+                            className="w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center gap-2"
+                            style={{ color: theme.textMain, ':hover': { backgroundColor: theme.hover } }}
+                        >
+                            <Users size={14} /> Manage Project
+                        </button>
+                    )}
+
                     <button 
                         onClick={() => { setShowPasswordModal(true); setShowSettings(false); }}
                         className="w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center gap-2"
-                        style={{ color: theme.textMain }}
+                        style={{ color: theme.textMain, ':hover': { backgroundColor: theme.hover } }}
                     >
                         <Key size={14}/> Change Password
                     </button>
+                    
                     <div className="h-px w-full" style={{ backgroundColor: theme.border }}></div>
+                    
                     <button 
                         onClick={onLogout} 
                         className="w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center gap-2 text-red-500 hover:bg-red-500/10"
                     >
-                        <LogOut size={14}/> Log Out
+                        <LogOut size={14}/> Close Project
                     </button>
                 </div>
              </>
@@ -1021,7 +1296,6 @@ const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout,
                  <Lock size={14} /> Security Check Required
             </div>
 
-            {/* Success/Error Message */}
             {passMsg && (
               <div className={`p-2 text-xs rounded border ${passMsg.includes("Success") ? "text-green-500 bg-green-500/10 border-green-500/20" : "text-red-500 bg-red-500/10 border-red-500/20"}`}>
                 {passMsg}
@@ -1061,12 +1335,12 @@ const Sidebar = ({ activeTab, setActiveTab, projectName, projectColor, onLogout,
 /**
  * COMPONENT: LITERATURE MANAGER (With Filtering, Sorting & "Swap on Hover" UI)
  */
-const LiteratureManager = ({ project }) => {
+const LiteratureManager = ({ project, permissions }) => {
   const { theme } = useTheme();
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // --- NEW: Sorting & Filtering State ---
+  // --- Sorting & Filtering State ---
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'include', 'exclude', 'unsure'
   const [sortBy, setSortBy] = useState("newest"); // 'newest', 'title', 'authors', 'year'
@@ -1074,6 +1348,9 @@ const LiteratureManager = ({ project }) => {
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPaper, setEditingPaper] = useState(null);
+
+  // --- PERMISSION CHECK ---
+  const canEdit = permissions?.canEditLit || permissions?.isOwner;
 
   const stats = useMemo(() => {
     return {
@@ -1096,7 +1373,7 @@ const LiteratureManager = ({ project }) => {
     }
   }, [project]);
 
-  // --- NEW: Logic Engine for Filtering & Sorting ---
+  // --- Logic Engine for Filtering & Sorting ---
   const processedPapers = useMemo(() => {
     let result = [...papers];
 
@@ -1135,6 +1412,8 @@ const LiteratureManager = ({ project }) => {
   // 2. Save (Create/Update)
   const handleSavePaper = async (e) => {
     e.preventDefault();
+    if (!canEdit) return; // Permission guard
+
     const formData = new FormData(e.target);
     const yearInput = formData.get('year');
 
@@ -1174,12 +1453,14 @@ const LiteratureManager = ({ project }) => {
 
   // 3. Edit Handler
   const handleEditClick = (paper) => {
+    if (!canEdit) return; // Permission guard
     setEditingPaper(paper);
     setIsModalOpen(true);
   };
 
   // 4. Delete Handler
   const handleDelete = async (id) => {
+    if (!canEdit) return; // Permission guard
     if (!confirm("Are you sure?")) return;
     setPapers(papers.filter(p => p.id !== id));
     await fetch(`/api/papers?id=${id}`, { method: 'DELETE' });
@@ -1187,6 +1468,7 @@ const LiteratureManager = ({ project }) => {
 
   // 5. Status Handler
   const handleStatusChange = async (id, newStatus) => {
+    if (!canEdit) return; // Permission guard
     setPapers(papers.map(p => p.id === id ? { ...p, status: newStatus } : p));
     await fetch('/api/papers', {
       method: 'PATCH',
@@ -1210,16 +1492,20 @@ const LiteratureManager = ({ project }) => {
             <span style={{ color: theme.danger }}>EXCLUDED: {stats.excluded}</span>
           </div>
         </div>
-        <button 
-          onClick={() => { setEditingPaper(null); setIsModalOpen(true); }}
-          className="px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: theme.accent, color: '#FFF' }}
-        >
-          <Plus size={14} /> Add Paper
-        </button>
+        
+        {/* ADD BUTTON (Hidden if no permission) */}
+        {canEdit && (
+            <button 
+            onClick={() => { setEditingPaper(null); setIsModalOpen(true); }}
+            className="px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: theme.accent, color: '#FFF' }}
+            >
+            <Plus size={14} /> Add Paper
+            </button>
+        )}
       </div>
 
-      {/* --- NEW: FILTER & SORT TOOLBAR --- */}
+      {/* --- FILTER & SORT TOOLBAR --- */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6 p-1">
         
         {/* Search Bar */}
@@ -1270,7 +1556,7 @@ const LiteratureManager = ({ project }) => {
         </div>
       </div>
 
-      {/* PAPERS LIST (Updated to use processedPapers) */}
+      {/* PAPERS LIST */}
       <div className="space-y-3">
         {loading ? <div className="text-sm opacity-50">Loading papers...</div> : processedPapers.map((paper) => (
           <div 
@@ -1301,8 +1587,8 @@ const LiteratureManager = ({ project }) => {
                 ) : <span className="opacity-60">No DOI</span>}
               </div>
 
-              {/* Status Toggles */}
-              <div className="flex gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+              {/* Status Toggles (Disabled style if no permission) */}
+              <div className={`flex gap-2 transition-opacity ${canEdit ? 'opacity-40 group-hover:opacity-100' : 'opacity-20 pointer-events-none'}`}>
                 <button onClick={() => handleStatusChange(paper.id, 'include')} title="Include" className={`p-1.5 rounded ${paper.status === 'include' ? 'bg-green-500 text-white' : 'hover:bg-green-500/10 text-green-500'}`}><Check size={14} /></button>
                 <button onClick={() => handleStatusChange(paper.id, 'exclude')} title="Exclude" className={`p-1.5 rounded ${paper.status === 'exclude' ? 'bg-red-500 text-white' : 'hover:bg-red-500/10 text-red-500'}`}><X size={14} /></button>
                 <button onClick={() => handleStatusChange(paper.id, 'unsure')} title="Unsure" className={`p-1.5 rounded ${paper.status === 'unsure' ? 'bg-yellow-500 text-white' : 'hover:bg-yellow-500/10 text-yellow-500'}`}><AlertCircle size={14} /></button>
@@ -1311,30 +1597,32 @@ const LiteratureManager = ({ project }) => {
 
             {/* --- TOP RIGHT CORNER (SWAP ZONE) --- */}
             
-            {/* 1. THE YEAR BADGE (Visible by default, Hidden on Hover) */}
-            <div className="absolute top-4 right-4 transition-opacity duration-200 opacity-100 group-hover:opacity-0 pointer-events-none">
+            {/* 1. THE YEAR BADGE (Visible by default, Hidden on Hover only if Editable) */}
+            <div className={`absolute top-4 right-4 transition-opacity duration-200 ${canEdit ? 'opacity-100 group-hover:opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <span className="text-[10px] font-mono border px-1.5 py-0.5 rounded" style={{ borderColor: theme.border, color: theme.textMuted }}>
                   {paper.year || "N/A"}
                 </span>
             </div>
 
-            {/* 2. THE ACTION BUTTONS (Hidden by default, Visible on Hover) */}
-            <div className="absolute top-4 right-4 flex gap-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
-                <button 
-                    onClick={() => handleEditClick(paper)}
-                    className="p-1 text-blue-500 hover:bg-blue-500/10 rounded"
-                    title="Edit"
-                >
-                    <Pencil size={14} />
-                </button>
-                <button 
-                    onClick={() => handleDelete(paper.id)}
-                    className="p-1 text-red-500 hover:bg-red-500/10 rounded"
-                    title="Delete"
-                >
-                    <Trash2 size={14} />
-                </button>
-            </div>
+            {/* 2. THE ACTION BUTTONS (Hidden by default, Visible on Hover) - Only if Editable */}
+            {canEdit && (
+                <div className="absolute top-4 right-4 flex gap-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+                    <button 
+                        onClick={() => handleEditClick(paper)}
+                        className="p-1 text-blue-500 hover:bg-blue-500/10 rounded"
+                        title="Edit"
+                    >
+                        <Pencil size={14} />
+                    </button>
+                    <button 
+                        onClick={() => handleDelete(paper.id)}
+                        className="p-1 text-red-500 hover:bg-red-500/10 rounded"
+                        title="Delete"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                </div>
+            )}
 
           </div>
         ))}
@@ -1346,8 +1634,8 @@ const LiteratureManager = ({ project }) => {
         )}
       </div>
 
-      {/* MODAL */}
-      {isModalOpen && (
+      {/* MODAL (Render only if permission exists) */}
+      {isModalOpen && canEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-xl border shadow-2xl" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
             <h3 className="text-lg font-medium mb-4" style={{ color: theme.textMain }}>
@@ -1375,27 +1663,28 @@ const LiteratureManager = ({ project }) => {
 };
 
 /**
- * COMPONENT: DATASET REGISTRY (With Search, Filtering & Sorting)
+ * COMPONENT: DATASET REGISTRY (With Search, Filtering & Permissions)
  */
-const DatasetRegistry = ({ project }) => {
+const DatasetRegistry = ({ project, permissions }) => {
   const { theme } = useTheme();
   const [datasets, setDatasets] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // --- NEW: Filter & Sort State ---
+  // --- Filter & Sort State ---
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterPII, setFilterPII] = useState("all"); // 'all', 'pii', 'safe'
-  const [filterType, setFilterType] = useState("all"); // 'all', 'file', 'link'
-  const [sortBy, setSortBy] = useState("newest"); // 'newest', 'name', 'license'
+  const [filterPII, setFilterPII] = useState("all"); 
+  const [filterType, setFilterType] = useState("all"); 
+  const [sortBy, setSortBy] = useState("newest"); 
 
   // UI State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [uploadMode, setUploadMode] = useState('file'); 
   const [uploading, setUploading] = useState(false);
   const [editingDataset, setEditingDataset] = useState(null);
-  
-  // Toggle for "Replace File" in Edit Mode
   const [showReplaceFile, setShowReplaceFile] = useState(false);
+
+  // --- PERMISSION CHECK ---
+  const canEdit = permissions?.canEditData || permissions?.isOwner;
 
   // 1. Fetch
   useEffect(() => {
@@ -1409,11 +1698,11 @@ const DatasetRegistry = ({ project }) => {
     }
   }, [project]);
 
-  // --- NEW: Logic Engine ---
+  // --- Logic Engine ---
   const processedDatasets = useMemo(() => {
     let result = [...datasets];
 
-    // 1. Search (Name, Description, License)
+    // 1. Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(ds => 
@@ -1429,7 +1718,7 @@ const DatasetRegistry = ({ project }) => {
       result = result.filter(ds => ds.piiFlag === isPII);
     }
 
-    // 3. Filter by Type (File vs Link)
+    // 3. Filter by Type
     if (filterType !== 'all') {
       result = result.filter(ds => {
         const isFile = ds.file?.url?.includes('cloudinary');
@@ -1456,6 +1745,7 @@ const DatasetRegistry = ({ project }) => {
   // 2. Handle Save (Create OR Edit)
   const handleSaveDataset = async (e) => {
     e.preventDefault();
+    if (!canEdit) return; // Permission guard
     setUploading(true);
     
     const formData = new FormData(e.target);
@@ -1498,6 +1788,7 @@ const DatasetRegistry = ({ project }) => {
 
   // 3. Delete
   const handleDelete = async (id) => {
+    if (!canEdit) return; // Permission guard
     if (!confirm("Remove this dataset?")) return;
     setDatasets(datasets.filter(d => d.id !== id));
     await fetch(`/api/datasets?id=${id}`, { method: 'DELETE' });
@@ -1505,6 +1796,7 @@ const DatasetRegistry = ({ project }) => {
 
   // 4. Open Edit Modal
   const handleEditClick = (ds) => {
+    if (!canEdit) return; // Permission guard
     setEditingDataset(ds);
     setUploadMode(ds.file?.url?.includes('cloudinary') ? 'file' : 'link');
     setShowReplaceFile(false); 
@@ -1521,18 +1813,21 @@ const DatasetRegistry = ({ project }) => {
              Upload datasets (auto-PII scan) or link external resources.
           </p>
         </div>
-        <button 
-          onClick={() => { setEditingDataset(null); setUploadMode('file'); setIsModalOpen(true); }}
-          className="px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: theme.accent, color: '#FFF' }}
-        >
-          <Plus size={14} /> Register Data
-        </button>
+        
+        {/* ADD BUTTON (Hidden if no permission) */}
+        {canEdit && (
+            <button 
+            onClick={() => { setEditingDataset(null); setUploadMode('file'); setIsModalOpen(true); }}
+            className="px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: theme.accent, color: '#FFF' }}
+            >
+            <Plus size={14} /> Register Data
+            </button>
+        )}
       </div>
 
-      {/* --- NEW: FILTER & SORT TOOLBAR --- */}
+      {/* --- FILTER & SORT TOOLBAR --- */}
       <div className="flex flex-col xl:flex-row gap-3 mb-6 p-1">
-        
         {/* Search Bar */}
         <div className="relative flex-1 group">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" style={{ color: theme.textMuted }} />
@@ -1547,7 +1842,6 @@ const DatasetRegistry = ({ project }) => {
 
         {/* Filter Controls */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 xl:pb-0">
-           
            {/* PII Filter */}
            <div className="relative shrink-0">
              <select
@@ -1595,7 +1889,7 @@ const DatasetRegistry = ({ project }) => {
         </div>
       </div>
 
-      {/* GRID (Updated to use processedDatasets) */}
+      {/* GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {loading ? <div className="text-sm opacity-50">Loading data...</div> : processedDatasets.map((ds) => (
           <div 
@@ -1620,11 +1914,13 @@ const DatasetRegistry = ({ project }) => {
               </div>
             </div>
 
-            {/* Edit/Delete Buttons */}
-            <div className="absolute top-4 right-4 flex gap-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
-                <button onClick={() => handleEditClick(ds)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded"><Pencil size={14} /></button>
-                <button onClick={() => handleDelete(ds.id)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded"><Trash2 size={14} /></button>
-            </div>
+            {/* EDIT/DELETE ACTIONS (Hidden if no permission) */}
+            {canEdit && (
+                <div className="absolute top-4 right-4 flex gap-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+                    <button onClick={() => handleEditClick(ds)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded"><Pencil size={14} /></button>
+                    <button onClick={() => handleDelete(ds.id)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded"><Trash2 size={14} /></button>
+                </div>
+            )}
 
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-4">
@@ -1659,15 +1955,15 @@ const DatasetRegistry = ({ project }) => {
         )}
       </div>
 
-      {/* MODAL */}
-      {isModalOpen && (
+      {/* MODAL (Rendered conditionally based on permission) */}
+      {isModalOpen && canEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-xl border shadow-2xl" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
             <h3 className="text-lg font-medium mb-4" style={{ color: theme.textMain }}>
                 {editingDataset ? "Edit Dataset" : "Add Data"}
             </h3>
             
-            {/* Show Tabs if Creating OR if Editing and we want to allow switching types */}
+            {/* Show Tabs */}
             <div className="flex gap-4 mb-4 border-b" style={{ borderColor: theme.border }}>
                 <button 
                     type="button"
@@ -1742,11 +2038,10 @@ const DatasetRegistry = ({ project }) => {
     </div>
   );
 };
-
 /**
- * COMPONENT: EXPERIMENTS (With Advanced Filtering, Sorting, Search & Collapsible Sidebar)
+ * COMPONENT: EXPERIMENTS (Updated with Permissions)
  */
-const Experiments = ({ project }) => {
+const Experiments = ({ project, permissions }) => {
   const { theme } = useTheme();
   const [experiments, setExperiments] = useState([]);
   const [selectedExp, setSelectedExp] = useState(null);
@@ -1756,16 +2051,16 @@ const Experiments = ({ project }) => {
 
   // --- UI STATE: Study List Controls ---
   const [studySearch, setStudySearch] = useState("");
-  const [studyFilter, setStudyFilter] = useState("all"); // 'all', 'planned', 'running', 'completed', 'abandoned'
-  const [studySort, setStudySort] = useState("newest"); // 'newest', 'alpha', 'logs'
+  const [studyFilter, setStudyFilter] = useState("all"); 
+  const [studySort, setStudySort] = useState("newest"); 
 
   // --- UI STATE: Log List Controls ---
   const [logSearch, setLogSearch] = useState("");
-  const [logFilterType, setLogFilterType] = useState("all"); // 'all', 'note', 'result', 'decision', 'bug'
+  const [logFilterType, setLogFilterType] = useState("all"); 
   const [logShowEvidenceOnly, setLogShowEvidenceOnly] = useState(false);
-  const [logSort, setLogSort] = useState("newest"); // 'newest', 'oldest', 'alpha'
+  const [logSort, setLogSort] = useState("newest"); 
 
-  // Modal State (Shared for Create & Edit)
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditingStudy, setIsEditingStudy] = useState(false); 
   const [createLoading, setCreateLoading] = useState(false);
@@ -1781,6 +2076,9 @@ const Experiments = ({ project }) => {
   const [editLogText, setEditLogText] = useState("");
 
   const [expandedLogs, setExpandedLogs] = useState({});
+
+  // --- PERMISSION CHECK ---
+  const canEdit = permissions?.canEditExps || permissions?.isOwner;
 
   // 1. Fetch
   useEffect(() => {
@@ -1801,66 +2099,36 @@ const Experiments = ({ project }) => {
     }
   }, [project]);
 
-  // --- LOGIC: Processed Studies (Filter/Sort/Search) ---
+  // --- LOGIC: Processed Studies ---
   const processedStudies = useMemo(() => {
     let result = [...experiments];
-
-    // 1. Search
-    if (studySearch.trim()) {
-        result = result.filter(e => e.title.toLowerCase().includes(studySearch.toLowerCase()));
-    }
-
-    // 2. Filter
-    if (studyFilter !== 'all') {
-        result = result.filter(e => e.status === studyFilter);
-    }
-
-    // 3. Sort
+    if (studySearch.trim()) result = result.filter(e => e.title.toLowerCase().includes(studySearch.toLowerCase()));
+    if (studyFilter !== 'all') result = result.filter(e => e.status === studyFilter);
     result.sort((a, b) => {
         switch (studySort) {
             case 'alpha': return a.title.localeCompare(b.title);
             case 'logs': return (b.logs?.length || 0) - (a.logs?.length || 0);
-            case 'newest':
-            default: return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+            case 'newest': default: return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
         }
     });
-
     return result;
   }, [experiments, studySearch, studyFilter, studySort]);
 
-  // --- LOGIC: Processed Logs (Filter/Sort/Search) ---
+  // --- LOGIC: Processed Logs ---
   const processedLogs = useMemo(() => {
     if (!selectedExp?.logs) return [];
     let result = [...selectedExp.logs];
-
-    // 1. Search
-    if (logSearch.trim()) {
-        result = result.filter(l => l.message.toLowerCase().includes(logSearch.toLowerCase()));
-    }
-
-    // 2. Filter Type
-    if (logFilterType !== 'all') {
-        result = result.filter(l => l.type === logFilterType);
-    }
-
-    // 3. Filter Evidence
-    if (logShowEvidenceOnly) {
-        result = result.filter(l => l.hasEvidence);
-    }
-
-    // 4. Sort
+    if (logSearch.trim()) result = result.filter(l => l.message.toLowerCase().includes(logSearch.toLowerCase()));
+    if (logFilterType !== 'all') result = result.filter(l => l.type === logFilterType);
+    if (logShowEvidenceOnly) result = result.filter(l => l.hasEvidence);
     result.sort((a, b) => {
-        // Always keep pinned at top first
         if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
-
         switch (logSort) {
             case 'alpha': return a.message.localeCompare(b.message);
             case 'oldest': return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-            case 'newest': 
-            default: return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            case 'newest': default: return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         }
     });
-
     return result;
   }, [selectedExp, logSearch, logFilterType, logShowEvidenceOnly, logSort]);
 
@@ -1869,9 +2137,9 @@ const Experiments = ({ project }) => {
 
   const handleSaveExp = async (e) => {
     e.preventDefault();
+    if (!canEdit) return;
     setCreateLoading(true);
     const formData = new FormData(e.target);
-    
     const payload = {
       title: formData.get('title'),
       method: formData.get('method'),
@@ -1881,19 +2149,16 @@ const Experiments = ({ project }) => {
 
     try {
         if (isEditingStudy) {
-            // UPDATE EXISTING
             const res = await fetch('/api/experiments', {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ id: selectedExp.id, ...payload })
             });
             const updated = await res.json();
-            
             const fullUpdated = { ...selectedExp, ...updated, logs: selectedExp.logs };
             setSelectedExp(fullUpdated);
             setExperiments(experiments.map(ex => ex.id === fullUpdated.id ? fullUpdated : ex));
         } else {
-            // CREATE NEW
             const res = await fetch('/api/experiments', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -1909,6 +2174,7 @@ const Experiments = ({ project }) => {
   };
 
   const handleUpdateStatus = async (id, updates) => {
+    if (!canEdit) return;
     const updated = { ...selectedExp, ...updates };
     setSelectedExp(updated);
     setExperiments(experiments.map(e => e.id === id ? { ...e, ...updates } : e));
@@ -1921,6 +2187,7 @@ const Experiments = ({ project }) => {
 
   const handleDeleteExp = async (id, e) => {
     e.stopPropagation();
+    if (!canEdit) return;
     if (!confirm("Delete this study?")) return;
     setExperiments(experiments.filter(e => e.id !== id));
     if (selectedExp?.id === id) setSelectedExp(null);
@@ -1928,6 +2195,7 @@ const Experiments = ({ project }) => {
   };
 
   const openEditStudyModal = () => {
+    if (!canEdit) return;
     setIsEditingStudy(true);
     setIsModalOpen(true);
   };
@@ -1935,7 +2203,7 @@ const Experiments = ({ project }) => {
   // --- LOG HANDLERS ---
 
   const handleAddLog = async () => {
-    if (!selectedExp || !logMsg.trim()) return;
+    if (!selectedExp || !logMsg.trim() || !canEdit) return;
     setLogLoading(true);
     try {
         const formData = new FormData();
@@ -1946,13 +2214,11 @@ const Experiments = ({ project }) => {
 
         const res = await fetch('/api/experiments/logs', { method: 'POST', body: formData });
         const newLog = await res.json();
-        
         const currentLogs = selectedExp.logs || [];
         const updatedExp = { ...selectedExp, logs: [newLog, ...currentLogs] };
         
         setSelectedExp(updatedExp);
         setExperiments(experiments.map(ex => ex.id === updatedExp.id ? updatedExp : ex));
-        
         setLogMsg("");
         setLogFile(null);
     } catch (err) { alert("Failed to log."); } 
@@ -1960,17 +2226,16 @@ const Experiments = ({ project }) => {
   };
 
   const startEditLog = (log) => {
+    if (!canEdit) return;
     setEditingLogId(log.id);
     setEditLogText(log.message);
   };
 
   const saveLogEdit = async () => {
-    if (!editLogText.trim()) return;
-    
+    if (!editLogText.trim() || !canEdit) return;
     const updatedLogs = selectedExp.logs.map(l => l.id === editingLogId ? { ...l, message: editLogText } : l);
     setSelectedExp({ ...selectedExp, logs: updatedLogs });
     setEditingLogId(null);
-
     await fetch('/api/experiments/logs', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -1979,6 +2244,7 @@ const Experiments = ({ project }) => {
   };
 
   const handleTogglePin = async (log) => {
+    if (!canEdit) return;
     const newStatus = !log.isPinned;
     const updatedLogs = selectedExp.logs.map(l => l.id === log.id ? { ...l, isPinned: newStatus } : l);
     setSelectedExp({ ...selectedExp, logs: updatedLogs });
@@ -1990,6 +2256,7 @@ const Experiments = ({ project }) => {
   };
 
   const handleDeleteLog = async (logId) => {
+    if (!canEdit) return;
     if(!confirm("Delete log?")) return;
     const updatedLogs = selectedExp.logs.filter(l => l.id !== logId);
     setSelectedExp({ ...selectedExp, logs: updatedLogs });
@@ -2027,7 +2294,8 @@ const Experiments = ({ project }) => {
         <div className="flex justify-between items-center">
           {isSidebarOpen && <h2 className="text-lg font-medium" style={{ color: theme.textMain }}>Studies</h2>}
           <div className="flex items-center gap-1">
-             {isSidebarOpen && (
+             {/* HIDE ADD BUTTON */}
+             {isSidebarOpen && canEdit && (
                 <button onClick={() => { setIsEditingStudy(false); setIsModalOpen(true); }} className="p-1.5 rounded hover:bg-white/5 transition-colors">
                     <Plus size={18} color={theme.accent} />
                 </button>
@@ -2093,7 +2361,6 @@ const Experiments = ({ project }) => {
             const statusStyle = getStatusStyle(exp.status);
             
             if (!isSidebarOpen) {
-                // Collapsed View (Vertical Text / Icons)
                 return (
                     <div 
                         key={exp.id}
@@ -2122,7 +2389,12 @@ const Experiments = ({ project }) => {
                     <h3 className={`text-sm font-medium leading-tight line-clamp-2 ${isSelected ? 'text-white' : ''}`} style={{ color: isSelected ? '#FFF' : theme.textMain }}>
                         {exp.title}
                     </h3>
-                    <button onClick={(e) => handleDeleteExp(exp.id, e)} className="opacity-0 group-hover:opacity-100 text-red-500 p-1 hover:bg-red-500/10 rounded transition-opacity"><Trash2 size={12}/></button>
+                    {/* HIDE DELETE */}
+                    {canEdit && (
+                        <button onClick={(e) => handleDeleteExp(exp.id, e)} className="opacity-0 group-hover:opacity-100 text-red-500 p-1 hover:bg-red-500/10 rounded transition-opacity">
+                            <Trash2 size={12}/>
+                        </button>
+                    )}
                 </div>
                 <div className="flex flex-wrap gap-2 mb-3">
                     <span className="text-[10px] px-2 py-0.5 rounded-full border uppercase font-bold tracking-wider" 
@@ -2151,24 +2423,28 @@ const Experiments = ({ project }) => {
       </div>
 
       {/* RIGHT COL: Workbench */}
-      {/* CHANGE 1: Added overflow-y-auto here so the whole column scrolls */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar">
         {selectedExp ? (
-          <div className="pr-2"> {/* Added padding wrapper to prevent scrollbar overlap */}
+          <div className="pr-2"> 
             {/* EXPERIMENT HEADER */}
             <div className="mb-4 p-6 rounded-xl border relative" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
               <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-3 flex-1 mr-4">
                     <h1 className="text-xl font-bold" style={{ color: theme.textMain }}>{selectedExp.title}</h1>
-                    <button onClick={openEditStudyModal} className="p-1.5 rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-colors">
-                        <Pencil size={14} />
-                    </button>
+                    {/* HIDE EDIT */}
+                    {canEdit && (
+                        <button onClick={openEditStudyModal} className="p-1.5 rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-colors">
+                            <Pencil size={14} />
+                        </button>
+                    )}
                 </div>
                 <div className="relative">
+                    {/* DISABLE STATUS */}
                     <select 
+                        disabled={!canEdit}
                         value={selectedExp.status}
                         onChange={(e) => handleUpdateStatus(selectedExp.id, { status: e.target.value })}
-                        className="appearance-none pl-3 pr-8 py-1.5 text-xs font-medium rounded border bg-transparent outline-none cursor-pointer hover:bg-white/5 transition-colors"
+                        className={`appearance-none pl-3 pr-8 py-1.5 text-xs font-medium rounded border bg-transparent outline-none hover:bg-white/5 transition-colors ${!canEdit ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                         style={{ color: getStatusStyle(selectedExp.status).color, borderColor: getStatusStyle(selectedExp.status).border }}
                     >
                         <option value="planned">Planned</option>
@@ -2194,17 +2470,19 @@ const Experiments = ({ project }) => {
                     <CheckSquare size={14} className="opacity-50" color={theme.textMuted}/>
                     <span className="text-[10px] font-bold uppercase tracking-wider opacity-50" style={{ color: theme.textMuted }}>Conclusion</span>
                  </div>
+                 {/* READ-ONLY CONCLUSION */}
                  <input 
-                    className="w-full bg-transparent text-sm outline-none placeholder:opacity-30 transition-all focus:pl-2"
+                    disabled={!canEdit}
+                    className={`w-full bg-transparent text-sm outline-none placeholder:opacity-30 transition-all focus:pl-2 ${!canEdit ? 'cursor-not-allowed' : ''}`}
                     style={{ color: theme.textMain }}
-                    placeholder="Enter final takeaway..."
+                    placeholder={canEdit ? "Enter final takeaway..." : "No conclusion yet."}
                     defaultValue={selectedExp.conclusion}
                     onBlur={(e) => handleUpdateStatus(selectedExp.id, { conclusion: e.target.value })}
                  />
               </div>
             </div>
 
-            {/* LOG TOOLBAR (Filter/Sort/Search) */}
+            {/* LOG TOOLBAR */}
             <div className="flex flex-col sm:flex-row items-center gap-4 mb-4 pb-2 border-b" style={{ borderColor: theme.border }}>
                 <div className="relative flex-1 w-full">
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-50" style={{ color: theme.textMuted }} />
@@ -2217,7 +2495,6 @@ const Experiments = ({ project }) => {
                     />
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-                    {/* Filter Type */}
                     <select
                         value={logFilterType}
                         onChange={(e) => setLogFilterType(e.target.value)}
@@ -2230,8 +2507,6 @@ const Experiments = ({ project }) => {
                         <option value="decision">Decisions</option>
                         <option value="bug">Bugs</option>
                     </select>
-                    
-                    {/* Sort */}
                     <select
                         value={logSort}
                         onChange={(e) => setLogSort(e.target.value)}
@@ -2242,8 +2517,6 @@ const Experiments = ({ project }) => {
                         <option value="oldest">Oldest</option>
                         <option value="alpha">A-Z</option>
                     </select>
-
-                    {/* Evidence Toggle */}
                     <button 
                         onClick={() => setLogShowEvidenceOnly(!logShowEvidenceOnly)}
                         className={`px-2 py-1.5 text-[10px] font-medium rounded border transition-colors flex items-center gap-1 whitespace-nowrap ${logShowEvidenceOnly ? 'bg-blue-500/10 border-blue-500/30 text-blue-500' : 'hover:bg-white/5'}`}
@@ -2255,32 +2528,37 @@ const Experiments = ({ project }) => {
                 </div>
             </div>
 
-            {/* LOG INPUT */}
-            <div className="flex flex-col gap-3 mb-4 p-4 rounded-xl border" style={{ borderColor: theme.border, backgroundColor: theme.bg }}>
-               <div className="flex gap-2">
-                  {['note', 'result', 'decision', 'bug'].map(type => (
-                      <button key={type} onClick={() => setLogType(type)} className={`text-[10px] px-3 py-1 rounded-full border transition-all uppercase font-bold flex items-center gap-1.5 ${logType === type ? 'bg-white/10 border-white/20 text-white' : 'border-transparent opacity-40 hover:opacity-100'}`}>
-                        {type === 'bug' && <Bug size={10}/>} {type === 'result' && <CheckCircle2 size={10}/>} {type === 'decision' && <Lightbulb size={10}/>} {type}
-                      </button>
-                  ))}
-               </div>
-               <div className="flex gap-2 items-start">
-                 <textarea value={logMsg} onChange={(e) => setLogMsg(e.target.value)} placeholder={`Log a new ${logType}...`} className="flex-1 bg-transparent text-sm outline-none placeholder:opacity-30 resize-none min-h-[60px]" style={{ color: theme.textMain }} rows={3} />
-                 <div className="flex flex-col gap-2">
-                    <div className="relative group">
-                        <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={(e) => setLogFile(e.target.files[0])} />
-                        <button className={`p-2 rounded transition-colors ${logFile ? 'text-blue-400 bg-blue-400/10' : 'text-gray-500 hover:bg-white/5'}`}><Paperclip size={16} /></button>
+            {/* LOG INPUT - CONDITIONAL RENDER */}
+            {canEdit ? (
+                <div className="flex flex-col gap-3 mb-4 p-4 rounded-xl border" style={{ borderColor: theme.border, backgroundColor: theme.bg }}>
+                <div className="flex gap-2">
+                    {['note', 'result', 'decision', 'bug'].map(type => (
+                        <button key={type} onClick={() => setLogType(type)} className={`text-[10px] px-3 py-1 rounded-full border transition-all uppercase font-bold flex items-center gap-1.5 ${logType === type ? 'bg-white/10 border-white/20 text-white' : 'border-transparent opacity-40 hover:opacity-100'}`}>
+                            {type === 'bug' && <Bug size={10}/>} {type === 'result' && <CheckCircle2 size={10}/>} {type === 'decision' && <Lightbulb size={10}/>} {type}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex gap-2 items-start">
+                    <textarea value={logMsg} onChange={(e) => setLogMsg(e.target.value)} placeholder={`Log a new ${logType}...`} className="flex-1 bg-transparent text-sm outline-none placeholder:opacity-30 resize-none min-h-[60px]" style={{ color: theme.textMain }} rows={3} />
+                    <div className="flex flex-col gap-2">
+                        <div className="relative group">
+                            <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={(e) => setLogFile(e.target.files[0])} />
+                            <button className={`p-2 rounded transition-colors ${logFile ? 'text-blue-400 bg-blue-400/10' : 'text-gray-500 hover:bg-white/5'}`}><Paperclip size={16} /></button>
+                        </div>
+                        <button onClick={handleAddLog} disabled={!logMsg || logLoading} className="p-2 rounded text-white disabled:opacity-30 transition-all flex items-center justify-center" style={{ backgroundColor: theme.accent }}>
+                            {logLoading ? <Loader2 className="animate-spin" size={16}/> : <ArrowRight size={16} />}
+                        </button>
                     </div>
-                    <button onClick={handleAddLog} disabled={!logMsg || logLoading} className="p-2 rounded text-white disabled:opacity-30 transition-all flex items-center justify-center" style={{ backgroundColor: theme.accent }}>
-                        {logLoading ? <Loader2 className="animate-spin" size={16}/> : <ArrowRight size={16} />}
-                    </button>
-                 </div>
-               </div>
-               {logFile && <span className="text-[10px] text-blue-400">Attached: {logFile.name}</span>}
-            </div>
+                </div>
+                {logFile && <span className="text-[10px] text-blue-400">Attached: {logFile.name}</span>}
+                </div>
+            ) : (
+                <div className="mb-4 p-4 rounded-xl border border-dashed text-center text-xs opacity-50" style={{ borderColor: theme.border, color: theme.textMuted }}>
+                    Read-only mode. You cannot add logs.
+                </div>
+            )}
 
             {/* TIMELINE FEED */}
-            {/* CHANGE 2: Removed 'flex-1' and 'overflow-y-auto' so it expands naturally */}
             <div className="space-y-4 pl-2 pr-2 pb-10">
               {processedLogs.map((log) => {
                 const isExpanded = expandedLogs[log.id];
@@ -2337,8 +2615,8 @@ const Experiments = ({ project }) => {
                             )}
                         </div>
 
-                        {/* ACTIONS */}
-                        {editingLogId !== log.id && (
+                        {/* ACTIONS (HIDE IF NO PERMISSION) */}
+                        {canEdit && editingLogId !== log.id && (
                             <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
                                 <button onClick={() => handleTogglePin(log)} className={`p-1.5 rounded hover:bg-white/5 ${log.isPinned ? 'text-yellow-500' : 'text-gray-500'}`}><Pin size={12} className={log.isPinned ? "fill-current" : ""}/></button>
                                 <button onClick={() => startEditLog(log)} className="p-1.5 rounded hover:bg-blue-500/10 text-gray-500 hover:text-blue-500"><Pencil size={12} /></button>
@@ -2361,7 +2639,7 @@ const Experiments = ({ project }) => {
       </div>
 
       {/* SHARED MODAL (Create + Edit) */}
-      {isModalOpen && (
+      {isModalOpen && canEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-lg p-6 rounded-xl border shadow-2xl" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
             <h3 className="text-lg font-medium mb-4" style={{ color: theme.textMain }}>{isEditingStudy ? "Edit Study Details" : "Design New Experiment"}</h3>
@@ -2567,8 +2845,10 @@ const HeatmapCardPreview = ({ url, theme, onClick }) => {
 /**
  * COMPONENT: ARTIFACTS (With Filtering, Sorting & Search)
  */
-const Artifacts = ({ project }) => {
+const Artifacts = ({ project, permissions }) => {
   const { theme } = useTheme();
+  // PERMISSION CHECK
+  const canEdit = permissions?.canEditArtifacts || permissions?.isOwner;
   const [artifacts, setArtifacts] = useState([]);
   
   // --- NEW: Filter & Sort State ---
@@ -2633,6 +2913,7 @@ const Artifacts = ({ project }) => {
   // 2. Handle Save
   const handleSaveArtifact = async (e) => {
     e.preventDefault();
+    if (!canEdit) return; // <--- ADD THIS LINE
     setLoading(true);
     const formData = new FormData(e.target);
     
@@ -2665,6 +2946,7 @@ const Artifacts = ({ project }) => {
 
   const handleDelete = async (id, e) => {
     e.stopPropagation();
+    if (!canEdit) return; // <--- ADD THIS LINE
     if(!confirm("Delete this artifact?")) return;
     await fetch(`/api/artifacts?id=${id}`, { method: 'DELETE' });
     setArtifacts(artifacts.filter(a => a.id !== id));
@@ -2673,6 +2955,7 @@ const Artifacts = ({ project }) => {
   // Edit Click Handler
   const handleEditClick = (art, e) => {
     e.stopPropagation();
+    if (!canEdit) return; // <--- ADD THIS LINE
     setEditingArtifact(art);
     const isUpload = art.url?.includes('cloudinary');
     setUploadMode(isUpload ? 'file' : 'link');
@@ -2704,6 +2987,7 @@ const Artifacts = ({ project }) => {
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-medium" style={{ color: theme.textMain }}>Results Gallery</h2>
+        {canEdit && ( // <--- ADD THIS
         <button 
             onClick={openCreateModal}
             className="px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2" 
@@ -2711,6 +2995,7 @@ const Artifacts = ({ project }) => {
         >
           <Plus size={14} /> Add Result
         </button>
+        )}
       </div>
 
       {/* --- NEW: FILTER & SORT TOOLBAR --- */}
@@ -2794,8 +3079,8 @@ const Artifacts = ({ project }) => {
             <div className="p-4 flex flex-col flex-1">
                 <div className="flex justify-between items-start mb-2">
                     <h3 className="text-sm font-medium truncate w-full" title={art.title} style={{ color: theme.textMain }}>{art.title}</h3>
-                    
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">
+                    {canEdit && (
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">
                         {art.type !== 'heatmap' && (
                             <button onClick={(e) => handleEditClick(art, e)} className="p-1.5 hover:bg-blue-500/10 text-gray-400 hover:text-blue-500 rounded transition-colors">
                                 <Pencil size={12} />
@@ -2805,6 +3090,7 @@ const Artifacts = ({ project }) => {
                             <Trash2 size={12} />
                         </button>
                     </div>
+                    )}
                 </div>
                 
                 <div className="mb-2">
@@ -2856,7 +3142,7 @@ const Artifacts = ({ project }) => {
       )}
 
       {/* CREATE / EDIT MODAL (Kept same) */}
-      {isModalOpen && (
+      {isModalOpen && canEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md p-6 rounded-xl border shadow-2xl" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
             <h3 className="text-lg font-medium mb-4" style={{ color: theme.textMain }}>{editingArtifact ? "Edit Result" : "Add Result"}</h3>
@@ -2944,8 +3230,10 @@ const Artifacts = ({ project }) => {
 /**
  * COMPONENT: OVERVIEW HUB (With Reminders, Deadlines, Pinning, & Advanced Input)
  */
-const OverviewHub = ({ project }) => {
+const OverviewHub = ({ project, permissions }) => {
   const { theme } = useTheme();
+  // PERMISSION CHECK
+  const canEdit = permissions?.canEditTasks || permissions?.isOwner;
   const [data, setData] = useState(null);
   
   // Input State
@@ -2978,6 +3266,7 @@ const OverviewHub = ({ project }) => {
   // 2. Add Task (With Deadline & Reminder)
   const handleAddTask = async (e) => {
     e.preventDefault();
+    if (!canEdit) return; // <--- ADD THIS LINE
     if (!newTaskTitle.trim()) return;
 
     const payload = { 
@@ -3033,6 +3322,8 @@ const OverviewHub = ({ project }) => {
 
   // 4. Pin Task
   const handleTogglePin = async (task) => {
+    if (!canEdit) return; // <--- ADD THIS LINE HERE
+
     const newPriority = task.priority === 'high' ? 'medium' : 'high';
     const updatedTasks = data.tasks.map(t => t.id === task.id ? { ...t, priority: newPriority } : t);
     setData(prev => ({ ...prev, tasks: updatedTasks }));
@@ -3046,9 +3337,12 @@ const OverviewHub = ({ project }) => {
 
   // 5. Toggle Status
   const handleToggleStatus = async (task) => {
+    if (!canEdit) return; // <--- ADD THIS LINE HERE
+
     const newStatus = task.status === 'done' ? 'todo' : 'done';
     const updatedTasks = data.tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t);
     setData(prev => ({ ...prev, tasks: updatedTasks }));
+    
     await fetch('/api/tasks', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -3057,17 +3351,20 @@ const OverviewHub = ({ project }) => {
   };
 
   const handleDeleteTask = async (id) => {
+    if (!canEdit) return; // <--- ADD THIS LINE
     if (!confirm("Delete this task?")) return;
     setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) }));
     await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
   };
 
   const startEditing = (task) => {
+    if (!canEdit) return; // <--- ADD THIS LINE
     setEditingTask(task.id);
     setEditTitle(task.title);
   };
 
   const saveEdit = async () => {
+    if (!canEdit) return; // <--- ADD THIS LINE
     if (!editTitle.trim()) return;
     const updatedTasks = data.tasks.map(t => t.id === editingTask ? { ...t, title: editTitle } : t);
     setData(prev => ({ ...prev, tasks: updatedTasks }));
@@ -3205,73 +3502,75 @@ const OverviewHub = ({ project }) => {
            </div>
            
            {/* ADD TASK INPUT (Layout Fixed: Date on new line) */}
-           <div className="flex flex-col gap-2 mb-4 shrink-0 bg-white/5 p-3 rounded-lg border border-transparent focus-within:border-gray-500/30 transition-colors">
-             
-             {/* Text Area & Word Count */}
-             <div className="flex gap-2 relative">
-                <textarea 
-                    className="flex-1 text-xs bg-transparent outline-none resize-none custom-scrollbar pb-4"
-                    rows={2}
-                    style={{ color: theme.textMain }}
-                    placeholder="Add new task..."
-                    value={newTaskTitle}
-                    onChange={(e) => {
-                        const val = e.target.value;
-                        if (getWordCount(val) <= 100) setNewTaskTitle(val);
-                    }}
-                />
-                
-                {/* Word Count */}
-                <span className="absolute bottom-0 left-0 text-[9px] opacity-30 select-none pointer-events-none" style={{ color: theme.textMuted }}>
-                    {getWordCount(newTaskTitle)}/100
-                </span>
+           {canEdit && (
+             <div className="flex flex-col gap-2 mb-4 shrink-0 bg-white/5 p-3 rounded-lg border border-transparent focus-within:border-gray-500/30 transition-colors">
+               
+               {/* Text Area & Word Count */}
+               <div className="flex gap-2 relative">
+                  <textarea 
+                      className="flex-1 text-xs bg-transparent outline-none resize-none custom-scrollbar pb-4"
+                      rows={2}
+                      style={{ color: theme.textMain }}
+                      placeholder="Add new task..."
+                      value={newTaskTitle}
+                      onChange={(e) => {
+                          const val = e.target.value;
+                          if (getWordCount(val) <= 100) setNewTaskTitle(val);
+                      }}
+                  />
+                  
+                  {/* Word Count */}
+                  <span className="absolute bottom-0 left-0 text-[9px] opacity-30 select-none pointer-events-none" style={{ color: theme.textMuted }}>
+                      {getWordCount(newTaskTitle)}/100
+                  </span>
 
-                <button 
-                    onClick={handleAddTask} 
-                    disabled={!newTaskTitle.trim()} 
-                    className="p-2 h-8 w-8 flex items-center justify-center rounded hover:opacity-80 disabled:opacity-50 self-start mt-1" 
-                    style={{ backgroundColor: theme.accent, color: '#FFF' }}
-                >
-                    <Plus size={14} />
-                </button>
+                  <button 
+                      onClick={handleAddTask} 
+                      disabled={!newTaskTitle.trim()} 
+                      className="p-2 h-8 w-8 flex items-center justify-center rounded hover:opacity-80 disabled:opacity-50 self-start mt-1" 
+                      style={{ backgroundColor: theme.accent, color: '#FFF' }}
+                  >
+                      <Plus size={14} />
+                  </button>
+               </div>
+               
+               {/* Controls Section */}
+               <div className="pt-2 border-t border-white/5">
+                  {/* Buttons Row */}
+                  <div className="flex items-center gap-2">
+                      <button 
+                          onClick={() => setShowDatePicker(!showDatePicker)}
+                          className={`px-3 py-1.5 rounded flex items-center gap-2 text-xs transition-colors shrink-0 ${newDueDate ? 'text-blue-400 bg-blue-400/10' : 'text-gray-400 hover:bg-white/5'}`}
+                      >
+                          <Clock size={14} className={newDueDate ? "text-blue-400" : "text-white"} /> 
+                          {newDueDate ? new Date(newDueDate).toLocaleDateString() : "Set Date"}
+                      </button>
+
+                      <button 
+                          onClick={() => setUseReminder(!useReminder)}
+                          className={`px-3 py-1.5 rounded flex items-center gap-2 text-xs transition-colors shrink-0 ${useReminder ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-500 hover:bg-white/5'}`}
+                          title="Email Reminder"
+                      >
+                          <Bell size={14} className={useReminder ? "fill-current" : ""} />
+                          {useReminder ? "On" : "Remind Me"}
+                      </button>
+                  </div>
+
+                  {/* Date Input Row (Moved to next line) */}
+                  {showDatePicker && (
+                      <div className="mt-3 animate-in fade-in slide-in-from-top-1">
+                          <input 
+                              type="datetime-local" 
+                              className="w-full bg-black/20 text-xs border rounded border-gray-600 outline-none p-2"
+                              style={{ color: theme.textMain }}
+                              value={newDueDate}
+                              onChange={(e) => setNewDueDate(e.target.value)}
+                          />
+                      </div>
+                  )}
+               </div>
              </div>
-             
-             {/* Controls Section */}
-             <div className="pt-2 border-t border-white/5">
-                {/* Buttons Row */}
-                <div className="flex items-center gap-2">
-                    <button 
-                        onClick={() => setShowDatePicker(!showDatePicker)}
-                        className={`px-3 py-1.5 rounded flex items-center gap-2 text-xs transition-colors shrink-0 ${newDueDate ? 'text-blue-400 bg-blue-400/10' : 'text-gray-400 hover:bg-white/5'}`}
-                    >
-                        <Clock size={14} className={newDueDate ? "text-blue-400" : "text-white"} /> 
-                        {newDueDate ? new Date(newDueDate).toLocaleDateString() : "Set Date"}
-                    </button>
-
-                    <button 
-                        onClick={() => setUseReminder(!useReminder)}
-                        className={`px-3 py-1.5 rounded flex items-center gap-2 text-xs transition-colors shrink-0 ${useReminder ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-500 hover:bg-white/5'}`}
-                        title="Email Reminder"
-                    >
-                        <Bell size={14} className={useReminder ? "fill-current" : ""} />
-                        {useReminder ? "On" : "Remind Me"}
-                    </button>
-                </div>
-
-                {/* Date Input Row (Moved to next line) */}
-                {showDatePicker && (
-                    <div className="mt-3 animate-in fade-in slide-in-from-top-1">
-                        <input 
-                            type="datetime-local" 
-                            className="w-full bg-black/20 text-xs border rounded border-gray-600 outline-none p-2"
-                            style={{ color: theme.textMain }}
-                            value={newDueDate}
-                            onChange={(e) => setNewDueDate(e.target.value)}
-                        />
-                    </div>
-                )}
-             </div>
-           </div>
+           )}
 
            {/* TASK LIST */}
            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
@@ -3293,7 +3592,9 @@ const OverviewHub = ({ project }) => {
                         {/* Checkbox */}
                         <button 
                             onClick={() => handleToggleStatus(task)}
-                            className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${task.status === 'done' ? 'bg-green-500 border-green-500' : 'border-gray-500'}`}
+                            disabled={!canEdit} // <--- ADD THIS
+                            // UPDATE CLASSNAME BELOW:
+                            className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${task.status === 'done' ? 'bg-green-500 border-green-500' : 'border-gray-500'} ${!canEdit ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                         >
                             {task.status === 'done' && <Check size={10} color="#FFF" />}
                         </button>
@@ -3342,7 +3643,7 @@ const OverviewHub = ({ project }) => {
                                 {formatDeadline(task)}
                                 
                                 {/* Actions */}
-                                {!editingTask && (
+                                {!editingTask && canEdit && (
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
                                         <button onClick={() => handleTogglePin(task)} title="Pin" className={`p-1 rounded hover:bg-white/10 ${isPinned ? 'text-yellow-500' : 'text-gray-500'}`}>
                                             <Pin size={10} className={isPinned ? "fill-current" : ""}/>
@@ -3367,30 +3668,99 @@ const OverviewHub = ({ project }) => {
 };
 
 /**
- * COMPONENT: LANDING PAGE (Linear-Style)
+ * COMPONENT: LANDING PAGE (Fixed Logos & Sliding Reviews)
  */
 const LandingPage = ({ onLogin }) => {
-  
-  // Helper for documentation link
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [activeTab, setActiveTab] = useState(0);
+  const [userCount, setUserCount] = useState(0);
+
+  // Mouse tracking
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      setMousePos({ x: event.clientX, y: event.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Auto-rotate features
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTab((prev) => (prev + 1) % 3);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Animated User Counter
+  useEffect(() => {
+    let start = 0;
+    const end = 2430; 
+    const duration = 2500;
+    const increment = end / (duration / 16);
+    
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) {
+        setUserCount(end);
+        clearInterval(timer);
+      } else {
+        setUserCount(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleDocs = () => {
-    window.open('https://github.com/', '_blank');
+    window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
   };
 
+  // Testimonials (Formal DPs, Balanced Size)
+  const testimonials = [
+    { name: "Sarah Chen", role: "Principal Investigator", lab: "Neuro Inst.", text: "ResearchOS has become the central nervous system of our lab. The data visualization is instant.", img: "https://i.pravatar.cc/150?u=sarah_res_fix" },
+    { name: "James Miller", role: "PhD Candidate", lab: "Stanford Bio-X", text: "Finally, a tool that understands the scientific workflow. It's like GitHub, but built for our data.", img: "https://i.pravatar.cc/150?u=james_res_fix" },
+    { name: "Elena Rodriguez", role: "Data Scientist", lab: "CERN", text: "The automated PII detection saved us from a major compliance headache. Worth every penny.", img: "https://i.pravatar.cc/150?u=elena_res_fix" },
+    { name: "Dr. A. Patel", role: "Lead Researcher", lab: "DeepMind", text: "Collaboration has never been this seamless. We fork projects daily to test new hypotheses.", img: "https://i.pravatar.cc/150?u=patel_res_fix" },
+    { name: "Marcus Wei", role: "Lab Director", lab: "Broad Institute", text: "The ability to publish negative results properly has changed how we work forever.", img: "https://i.pravatar.cc/150?u=marcus_res_fix" },
+  ];
+  
+  // Actual Company Logos (Reliable URLs)
+  const companyLogos = [
+      { name: "MIT", url: "https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg" },
+      { name: "OpenAI", url: "https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg" },
+      { name: "Meta", url: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg" },
+      { name: "Google", url: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" },
+      { name: "IBM", url: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" }
+  ];
+
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-white font-sans selection:bg-purple-500/30">
+    <div className="min-h-screen bg-[#08090B] text-[#E1E1E3] font-sans selection:bg-purple-500/30 overflow-x-hidden relative">
       
+      {/* --- BACKGROUND --- */}
+      <div 
+        className="fixed inset-0 z-0 pointer-events-none transition-opacity duration-500"
+        style={{
+          background: `radial-gradient(1000px at ${mousePos.x}px ${mousePos.y}px, rgba(147, 51, 234, 0.15), transparent 70%)`
+        }} 
+      />
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150 mix-blend-overlay"></div>
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]" 
+           style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }}>
+      </div>
+
       {/* --- NAVBAR --- */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-[#0B0E14]/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-white rounded-md flex items-center justify-center">
-              <div className="w-2 h-2 bg-black rounded-full" />
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#08090B]/80 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <div className="w-6 h-6 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-sm flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <FlaskConical size={12} className="text-white" />
             </div>
-            <span className="font-semibold tracking-tight">ResearchOS</span>
+            <span className="font-bold text-lg tracking-tight text-white font-serif">ResearchOS</span>
           </div>
           <div className="flex items-center gap-6">
-            <button onClick={onLogin} className="text-sm text-gray-400 hover:text-white transition-colors">Log In</button>
-            <button onClick={onLogin} className="text-sm bg-white text-black px-4 py-2 rounded-full font-medium hover:bg-gray-200 transition-colors">
+            <button onClick={handleDocs} className="hidden sm:block text-xs font-medium text-gray-400 hover:text-white transition-colors">Documentation</button>
+            <button onClick={onLogin} className="text-xs font-medium text-gray-400 hover:text-white transition-colors">Log In</button>
+            <button onClick={onLogin} className="text-xs bg-white text-black px-5 py-2 rounded-full font-semibold hover:bg-gray-200 transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)]">
               Get Started
             </button>
           </div>
@@ -3398,101 +3768,670 @@ const LandingPage = ({ onLogin }) => {
       </nav>
 
       {/* --- HERO SECTION --- */}
-      <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 overflow-hidden">
-        {/* Background Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none" />
+      <div className="relative pt-40 pb-24 z-10">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+          <div className="text-left relative z-10">
+            
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[10px] font-medium text-gray-300 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"/> v2.0 Public Beta
+            </div>
 
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-xs font-medium text-purple-300 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-            </span>
-            v1.0 is now live
+            <h1 className="text-6xl sm:text-7xl md:text-8xl font-serif font-medium tracking-tight mb-8 text-white leading-[1.1] animate-in fade-in slide-in-from-bottom-8 duration-1000">
+              Research <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-300 to-indigo-400">Synchronized.</span>
+            </h1>
+            
+            <p className="text-lg text-gray-400 mb-12 max-w-lg leading-relaxed font-light animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
+              The operating system for modern labs. Organize private experiments, collaborate securely, and publish to the global feed.
+            </p>
+            
+            <div className="flex gap-4 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-300 mb-16">
+              <button onClick={onLogin} className="h-12 px-8 rounded-full bg-white text-black font-semibold text-sm hover:scale-105 transition-transform flex items-center gap-2 shadow-[0_0_30px_-5px_rgba(168,85,247,0.4)]">
+                Start Researching <ArrowRight size={16} />
+              </button>
+              <button onClick={handleDocs} className="h-12 px-8 rounded-full border border-white/10 hover:bg-white/5 text-white font-medium text-sm transition-colors">
+                Read Manifest
+              </button>
+            </div>
+
+            {/* SOCIAL PROOF */}
+            <div className="flex items-center gap-6 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-500 p-6 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm w-fit">
+                <div className="flex -space-x-4">
+                   {[1,2,3,4,5].map(i => (
+                       <div key={i} className="w-12 h-12 rounded-full border-4 border-[#08090B] bg-gradient-to-b from-gray-700 to-black flex items-center justify-center overflow-hidden shadow-lg">
+                          <img src={`https://i.pravatar.cc/150?u=${i + 20}`} alt="User" className="w-full h-full object-cover opacity-80" />
+                       </div>
+                   ))}
+                </div>
+                <div className="flex flex-col">
+                   <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold text-white tabular-nums tracking-tighter">
+                        {userCount.toLocaleString()}
+                      </span>
+                      <span className="text-lg text-gray-500 font-medium">+</span>
+                   </div>
+                   <span className="text-xs font-bold uppercase tracking-widest text-purple-400">Active Researchers</span>
+                </div>
+            </div>
+
           </div>
-          
-          <h1 className="text-5xl sm:text-7xl font-bold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            The operating system <br /> for modern research.
-          </h1>
-          
-          <p className="text-lg sm:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-200">
-            Manage literature, track experiments, and visualize results in one unified workspace. Designed for labs that move fast.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-300">
-            <button onClick={onLogin} className="h-12 px-8 rounded-full bg-white text-black font-medium hover:bg-gray-200 transition-all flex items-center gap-2 group">
-              Start Researching <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button onClick={handleDocs} className="h-12 px-8 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-gray-300">
-              View Documentation
-            </button>
+
+          {/* HERO VISUAL: Abstract Knowledge Graph */}
+          <div className="relative h-[500px] hidden md:flex items-center justify-center perspective-[1000px]">
+              <div className="relative w-80 h-80 animate-[float_6s_ease-in-out_infinite]">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-[#161B22] border border-purple-500/30 rounded-2xl shadow-[0_0_50px_rgba(168,85,247,0.2)] flex items-center justify-center z-20 backdrop-blur-xl">
+                      <Layers size={32} className="text-purple-400"/>
+                  </div>
+                  {[0, 72, 144, 216, 288].map((deg, i) => (
+                      <div key={i} className="absolute top-1/2 left-1/2 w-full h-full" style={{ transform: `translate(-50%, -50%) rotate(${deg}deg)` }}>
+                          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-12 h-12 bg-[#161B22] border border-white/10 rounded-xl flex items-center justify-center shadow-xl animate-[spin_20s_linear_infinite_reverse]">
+                              {i === 0 && <FileText size={16} className="text-gray-400"/>}
+                              {i === 1 && <Activity size={16} className="text-purple-400"/>}
+                              {i === 2 && <Database size={16} className="text-gray-400"/>}
+                              {i === 3 && <GitBranch size={16} className="text-gray-400"/>}
+                              {i === 4 && <Users size={16} className="text-gray-400"/>}
+                          </div>
+                          <div className="absolute top-[20px] left-1/2 -translate-x-1/2 w-[1px] h-[100px] bg-gradient-to-b from-purple-500/30 to-transparent"></div>
+                      </div>
+                  ))}
+                  <div className="absolute inset-0 border border-purple-500/10 rounded-full animate-[spin_40s_linear_infinite]"></div>
+                  <div className="absolute inset-12 border border-dashed border-purple-500/10 rounded-full animate-[spin_30s_linear_infinite_reverse]"></div>
+              </div>
           </div>
         </div>
       </div>
 
-      {/* --- UI PREVIEW (Bento Grid Style) --- */}
-      <div className="max-w-6xl mx-auto px-6 pb-32">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* --- COMPANY LOGOS (Real Images, White Filter, Sliding) --- */}
+      <div className="py-10 border-y border-white/5 bg-white/[0.01] overflow-hidden relative">
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#08090B] to-transparent z-10"></div>
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#08090B] to-transparent z-10"></div>
           
-          {/* Card 1: Literature */}
-          <div className="col-span-2 p-8 rounded-3xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors relative overflow-hidden group">
-            <div className="relative z-10">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4 text-purple-400">
-                <BookOpen size={20} />
+          <div className="flex gap-24 w-max animate-[marquee_40s_linear_infinite] items-center">
+              {[...companyLogos, ...companyLogos, ...companyLogos].map((co, i) => (
+                  <div key={i} className="opacity-40 hover:opacity-100 transition-opacity cursor-default grayscale hover:grayscale-0">
+                      {/* CSS Filter makes images monochrome white. Hover reveals original. */}
+                      <img 
+                        src={co.url} 
+                        alt={co.name} 
+                        className="h-8 w-auto object-contain" 
+                        style={{ filter: 'brightness(0) invert(1)' }} 
+                      />
+                  </div>
+              ))}
+          </div>
+      </div>
+
+      {/* --- INTERACTIVE FEATURES SECTION --- */}
+      <div className="py-32 border-b border-white/5">
+          <div className="max-w-7xl mx-auto px-6">
+              <div className="grid md:grid-cols-12 gap-16 items-center">
+                  
+                  {/* Left: Navigation */}
+                  <div className="md:col-span-5 space-y-10 sticky top-32 h-fit">
+                      <h2 className="text-4xl font-serif text-white mb-12">A unified workspace</h2>
+                      {[
+                          { id: 0, title: "Connect & Fork", desc: "Clone public projects to your private workspace." },
+                          { id: 1, title: "Analyze Data", desc: "Auto-detect PII and visualize CSVs instantly." },
+                          { id: 2, title: "Publish Findings", desc: "Share verified results to the global feed." }
+                      ].map((item) => (
+                          <div 
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            className={`cursor-pointer group transition-all duration-500 pl-8 border-l-4 ${
+                                activeTab === item.id 
+                                ? 'border-purple-500' 
+                                : 'border-white/5 hover:border-white/20'
+                            }`}
+                          >
+                              <h3 className={`text-2xl font-medium mb-2 transition-colors ${
+                                  activeTab === item.id ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'
+                              }`}>
+                                  {item.title}
+                              </h3>
+                              <p className={`text-base leading-relaxed transition-colors ${
+                                  activeTab === item.id ? 'text-purple-200/80' : 'text-gray-600'
+                              }`}>
+                                  {item.desc}
+                              </p>
+                          </div>
+                      ))}
+                  </div>
+
+                  {/* Right: Floating Graphics (No Box) */}
+                  <div className="md:col-span-7 aspect-video relative flex items-center justify-center">
+                      
+                      {/* CONTENT 1: FORKING */}
+                      <div className={`absolute transition-all duration-700 ${activeTab === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                          <div className="relative w-[400px]">
+                               {/* Original */}
+                               <div className="bg-[#161B22] border border-purple-500/30 p-6 rounded-2xl mb-12 mx-auto w-56 text-center shadow-[0_20px_50px_rgba(168,85,247,0.15)] z-10 relative backdrop-blur-xl">
+                                   <div className="w-10 h-10 bg-purple-500 text-white rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg"><Lock size={18}/></div>
+                                   <div className="text-sm text-white font-bold">Original Study</div>
+                               </div>
+                               {/* Lines */}
+                               <svg className="absolute top-16 left-0 w-full h-32 pointer-events-none" style={{ overflow: 'visible' }}>
+                                   <path d="M200,0 V40 C200,80 60,80 60,120" fill="none" stroke="url(#grad1)" strokeWidth="2" className="opacity-50" />
+                                   <path d="M200,0 V40 C200,80 340,80 340,120" fill="none" stroke="url(#grad2)" strokeWidth="2" className="opacity-50" />
+                                   <defs>
+                                       <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#a855f7" stopOpacity="1" /><stop offset="100%" stopColor="#3b82f6" stopOpacity="1" /></linearGradient>
+                                       <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#a855f7" stopOpacity="1" /><stop offset="100%" stopColor="#a855f7" stopOpacity="1" /></linearGradient>
+                                   </defs>
+                               </svg>
+
+                               {/* Forks */}
+                               <div className="flex justify-between gap-8">
+                                   <div className="bg-[#0D1117] border border-blue-500/30 p-5 rounded-2xl w-44 text-center shadow-2xl transform hover:-translate-y-2 transition-transform duration-500">
+                                       <div className="w-8 h-8 bg-blue-500/20 text-blue-400 rounded-full mx-auto mb-3 flex items-center justify-center"><GitBranch size={16}/></div>
+                                       <div className="text-xs text-gray-300 font-mono">Fork A (Bio)</div>
+                                       <div className="mt-2 h-1 w-12 bg-blue-500/30 rounded-full mx-auto"></div>
+                                   </div>
+                                   <div className="bg-[#0D1117] border border-purple-500/30 p-5 rounded-2xl w-44 text-center shadow-2xl transform hover:-translate-y-2 transition-transform duration-500 delay-100">
+                                       <div className="w-8 h-8 bg-purple-500/20 text-purple-400 rounded-full mx-auto mb-3 flex items-center justify-center"><GitBranch size={16}/></div>
+                                       <div className="text-xs text-gray-300 font-mono">Fork B (Neuro)</div>
+                                       <div className="mt-2 h-1 w-12 bg-purple-500/30 rounded-full mx-auto"></div>
+                                   </div>
+                               </div>
+                          </div>
+                      </div>
+
+                      {/* CONTENT 2: ANALYSIS */}
+                      <div className={`absolute transition-all duration-700 ${activeTab === 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                           <div className="w-80 bg-[#161B22]/80 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                               <div className="h-10 bg-white/5 border-b border-white/5 flex items-center px-4 gap-2">
+                                   <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"/>
+                                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"/>
+                                   <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"/>
+                               </div>
+                               <div className="p-6 space-y-4 relative">
+                                   <div className="flex items-center justify-between text-xs text-gray-400 font-mono">
+                                       <div className="flex items-center gap-2"><FileText size={12}/> data_v2.csv</div>
+                                       <span>24MB</span>
+                                   </div>
+                                   <div className="space-y-2">
+                                       {[1,2,3,4,5].map(i => (
+                                           <div key={i} className="h-6 bg-white/5 rounded flex items-center px-3 gap-3">
+                                               <div className="w-2 h-2 bg-white/10 rounded-full"/>
+                                               <div className="w-1/3 h-2 bg-white/10 rounded"/>
+                                               <div className="w-1/4 h-2 bg-white/5 rounded ml-auto"/>
+                                           </div>
+                                       ))}
+                                   </div>
+                                   <div className="absolute top-0 left-0 right-0 h-[2px] bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,1)] animate-[scan_2s_linear_infinite] z-10"></div>
+                                   <div className="flex justify-end pt-2">
+                                       <span className="text-[10px] font-bold tracking-wider px-2 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded flex items-center gap-1">
+                                           <Check size={10} /> PII SAFE
+                                       </span>
+                                   </div>
+                               </div>
+                           </div>
+                      </div>
+
+                      {/* CONTENT 3: PUBLISH */}
+                      <div className={`absolute transition-all duration-700 ${activeTab === 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                          <div className="relative">
+                              <div className="w-80 bg-[#161B22] rounded-2xl border border-white/10 p-6 shadow-2xl transform rotate-[-3deg] hover:rotate-0 transition-transform duration-500 cursor-default">
+                                  <div className="flex gap-4 mb-6">
+                                      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 shadow-lg"></div>
+                                      <div className="flex-1 space-y-2">
+                                          <div className="h-2.5 w-32 bg-white/20 rounded"></div>
+                                          <div className="h-2 w-20 bg-white/10 rounded"></div>
+                                      </div>
+                                  </div>
+                                  <div className="h-32 bg-black/40 rounded-xl mb-6 overflow-hidden relative border border-white/5">
+                                      <div className="absolute bottom-0 left-0 w-full h-full flex items-end px-3 gap-1.5 pb-3">
+                                          <div className="w-1/4 h-[40%] bg-purple-500/60 rounded-t-sm animate-[growBar_3s_infinite_alternate]"></div>
+                                          <div className="w-1/4 h-[70%] bg-purple-500/60 rounded-t-sm animate-[growBar_4s_infinite_alternate]"></div>
+                                          <div className="w-1/4 h-[50%] bg-purple-500/60 rounded-t-sm animate-[growBar_2.5s_infinite_alternate]"></div>
+                                          <div className="w-1/4 h-[80%] bg-purple-500/60 rounded-t-sm animate-[growBar_3.5s_infinite_alternate]"></div>
+                                      </div>
+                                  </div>
+                                  <div className="flex gap-3">
+                                      <div className="h-8 w-16 bg-white/5 rounded-full"></div>
+                                      <div className="h-8 w-16 bg-white/5 rounded-full"></div>
+                                  </div>
+                              </div>
+                              
+                              {/* Tooltip */}
+                              <div className="absolute -right-12 -bottom-6 bg-white text-black text-xs font-bold px-4 py-2 rounded-xl shadow-[0_10px_20px_rgba(0,0,0,0.3)] animate-bounce z-20 flex items-center gap-2">
+                                  <Sparkles size={12} className="text-purple-600" /> 
+                                  AI Generated
+                              </div>
+                          </div>
+                      </div>
+                  </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Literature Manager</h3>
-              <p className="text-gray-400 text-sm max-w-sm">AI-powered summarization and organization for your papers. Never lose a citation again.</p>
-            </div>
-            <div className="absolute right-0 bottom-0 w-1/2 h-full bg-gradient-to-l from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
+      </div>
 
-          {/* Card 2: Experiments */}
-          <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 text-blue-400">
-              <FlaskConical size={20} />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Lab Notebook</h3>
-            <p className="text-gray-400 text-sm">Track variables, log results, and maintain reproducibility.</p>
-          </div>
-
-          {/* Card 3: Data */}
-          <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4 text-emerald-400">
-              <Database size={20} />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Data Registry</h3>
-            <p className="text-gray-400 text-sm">Secure storage with automatic PII detection and schema validation.</p>
-          </div>
-
-          {/* Card 4: Global Search */}
-          <div className="col-span-2 p-8 rounded-3xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] transition-colors flex items-center justify-between">
-            <div>
-               <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center mb-4 text-orange-400">
-                <Zap size={20} />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Global Command Center</h3>
-              <p className="text-gray-400 text-sm max-w-xs">Find any paper, dataset, or experiment instantly across all your projects.</p>
-            </div>
-            <div className="hidden sm:block p-4 bg-black/40 rounded-xl border border-white/10 text-xs text-gray-500 font-mono">
-               Cmd + K to search...
-            </div>
-          </div>
-
-        </div>
+      {/* --- REVIEWS (Compact Sliding Marquee) --- */}
+      <div className="py-32 border-b border-white/5 bg-[#08090B] overflow-hidden relative">
+         <div className="max-w-[1400px] mx-auto px-6 mb-16 text-center">
+             <h2 className="text-4xl font-serif text-white">Trusted by pioneers</h2>
+         </div>
+         
+         <div className="flex gap-8 w-max animate-[marquee_60s_linear_infinite] hover:[animation-play-state:paused]">
+             {/* Duplicated list for seamless loop */}
+             {[...testimonials, ...testimonials].map((t, i) => (
+                 <div key={i} className="w-[320px] p-6 rounded-[24px] bg-[#161B22] border border-white/5 hover:border-purple-500/30 transition-all duration-500 group hover:-translate-y-1 flex flex-col justify-between">
+                     <div>
+                        <p className="text-sm text-gray-300 font-serif leading-relaxed mb-6">"{t.text}"</p>
+                     </div>
+                     <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                         <div className="shrink-0 w-10 h-10 rounded-full border border-white/10 shadow-lg overflow-hidden bg-gray-800">
+                            <img src={t.img} alt={t.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                         </div>
+                         <div>
+                             <div className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">{t.name}</div>
+                             <div className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">{t.role}</div>
+                         </div>
+                     </div>
+                 </div>
+             ))}
+         </div>
       </div>
 
       {/* --- FOOTER --- */}
-      <footer className="border-t border-white/5 py-12">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-6">
-           <div className="text-sm text-gray-500">© 2024 ResearchOS. All rights reserved.</div>
-           <div className="flex gap-6">
-              <CheckCircle2 size={20} className="text-gray-600" />
-              <Shield size={20} className="text-gray-600" />
-              <Globe size={20} className="text-gray-600" />
+      <footer className="bg-[#050505] border-t border-white/10 pt-20 pb-10">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12 mb-20">
+           <div className="col-span-2">
+              <div className="flex items-center gap-2 mb-6">
+                  <div className="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
+                      <div className="w-2 h-2 bg-black rounded-full" />
+                  </div>
+                  <span className="font-bold text-xl text-white font-serif">ResearchOS</span>
+              </div>
+              <p className="text-gray-500 max-w-sm text-sm leading-relaxed mb-8">
+                  The collaborative operating system for modern research. <br/>Designed in India, built for the world.
+              </p>
+               <div>
+                  <a href="mailto:researchoshello@gmail.com" className="text-sm text-gray-400 hover:text-white border-b border-white/20 hover:border-white pb-1 transition-all">
+                      researchoshello@gmail.com
+                  </a>
+              </div>
+           </div>
+           
+           <div>
+               <h4 className="font-bold mb-6 text-white text-sm uppercase tracking-wider">Product</h4>
+               <ul className="space-y-4 text-gray-500 text-sm">
+                   <li><button onClick={onLogin} className="hover:text-white transition-colors">Log In</button></li>
+                   <li><button onClick={onLogin} className="hover:text-white transition-colors">Request Access</button></li>
+                   <li><button onClick={handleDocs} className="hover:text-white transition-colors">Manifesto</button></li>
+               </ul>
+           </div>
+
+            <div>
+               <h4 className="font-bold mb-6 text-white text-sm uppercase tracking-wider">Legal</h4>
+               <ul className="space-y-4 text-gray-500 text-sm">
+                   <li className="hover:text-white cursor-pointer transition-colors">Privacy Policy</li>
+                   <li className="hover:text-white cursor-pointer transition-colors">Terms of Service</li>
+                   <li className="hover:text-white cursor-pointer transition-colors">Security</li>
+               </ul>
            </div>
         </div>
+        
+        <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-white/5 flex justify-between items-center text-xs text-gray-600">
+            <div>© 2025 ResearchOS Inc.</div>
+            <div className="flex gap-6">
+                <span>Indore, India</span>
+            </div>
+        </div>
       </footer>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes scan {
+          0% { top: 0%; opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes growBar {
+          0% { transform: scaleY(0.4); }
+          100% { transform: scaleY(1.0); }
+        }
+      `}</style>
     </div>
+  );
+};
+
+/**
+ * COMPONENT: PROJECT SETTINGS MODAL (Visibility, Social Post & Team)
+ */
+const ProjectSettingsModal = ({ isOpen, onClose, project, isOwner, onUpdateProject }) => {
+  const { theme } = useTheme();
+  const [activeTab, setActiveTab] = useState('general'); // 'general' | 'team'
+  
+  // --- General State (Visibility & Social) ---
+  const [isPublic, setIsPublic] = useState(project?.isPublic || false);
+  const [heading, setHeading] = useState(project?.postHeading || "");
+  const [summary, setSummary] = useState(project?.postSummary || "");
+  const [tags, setTags] = useState(project?.tags ? project.tags.join(", ") : "");
+  
+  const [loading, setLoading] = useState(false); // Save loading
+  const [genLoading, setGenLoading] = useState(false); // AI loading
+
+  // --- Team State ---
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [teamLoading, setTeamLoading] = useState(false);
+  const [memberList, setMemberList] = useState(project?.members || []);
+  
+  // Permissions State for Invite
+  const [perms, setPerms] = useState({
+    canEditLit: false,
+    canEditData: false,
+    canEditExps: false,
+    canManageTeam: false
+  });
+
+  // Sync state when project prop updates
+  useEffect(() => {
+    if (project) {
+        setIsPublic(project.isPublic);
+        setHeading(project.postHeading || "");
+        setSummary(project.postSummary || "");
+        setTags(project.tags ? project.tags.join(", ") : "");
+        setMemberList(project.members || []);
+    }
+  }, [project]);
+
+  // --- HANDLER: AI GENERATION (Context Aware) ---
+  const handleAiGenerate = async () => {
+    if (!project) return;
+    setGenLoading(true);
+    try {
+        // Call our smart internal API with just the ID
+        const res = await fetch('/api/ai/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ projectId: project.id })
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Generation failed");
+        
+        // Clean and Parse JSON
+        const cleanText = data.text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(cleanText);
+        
+        setHeading(parsed.heading);
+        setSummary(parsed.summary);
+        // Ensure tags is a string for the input field
+        setTags(Array.isArray(parsed.tags) ? parsed.tags.join(", ") : parsed.tags); 
+    } catch (e) {
+        console.error("AI Generation Error:", e);
+        // 3. Show the ACTUAL error message
+        alert(`Generation failed: ${e.message}`);
+    } finally {
+        setGenLoading(false);
+    }
+  };
+
+  // --- HANDLER: SAVE GENERAL SETTINGS ---
+  const handleUpdate = async () => {
+    setLoading(true);
+    try {
+        // Parse tags string back to array
+        const tagArray = tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+        const res = await fetch(`/api/projects/${project.id}`, {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                isPublic,
+                postHeading: heading,
+                postSummary: summary,
+                tags: tagArray
+            })
+        });
+        if(!res.ok) throw new Error("Failed");
+        const updated = await res.json();
+        onUpdateProject(updated); // Update parent state
+        alert("Settings saved successfully!");
+    } catch(e) {
+        alert("Error updating settings. Are you the owner?");
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  // --- HANDLER: INVITE MEMBER ---
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    setTeamLoading(true);
+    try {
+        const res = await fetch('/api/members', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                projectId: project.id, 
+                email: inviteEmail,
+                permissions: perms 
+            })
+        });
+        
+        const data = await res.json();
+        
+        if(!res.ok) throw new Error(data.error);
+        
+        // Smart Update: Update if exists, add if new
+        setMemberList(prevList => {
+            const exists = prevList.find(m => m.id === data.id);
+            if (exists) {
+                return prevList.map(m => m.id === data.id ? data : m);
+            }
+            return [...prevList, data];
+        });
+
+        setInviteEmail("");
+        setPerms({ canEditLit: false, canEditData: false, canEditExps: false, canManageTeam: false });
+        alert("Member invited/updated!");
+    } catch(e) {
+        alert(e.message);
+    } finally {
+        setTeamLoading(false);
+    }
+  };
+
+  // --- HANDLER: REMOVE MEMBER ---
+  const handleRemoveMember = async (memberId) => {
+    if(!confirm("Remove this member?")) return;
+    try {
+        await fetch(`/api/members?id=${memberId}`, { method: 'DELETE' });
+        setMemberList(memberList.filter(m => m.id !== memberId));
+    } catch(e) { alert("Failed to remove member"); }
+  };
+
+  if(!isOpen) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Project Settings">
+        {/* Tabs */}
+        <div className="flex border-b mb-6" style={{ borderColor: theme.border }}>
+            <button 
+                onClick={() => setActiveTab('general')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'general' ? 'border-blue-500 text-blue-500' : 'border-transparent opacity-50'}`}
+                style={{ color: activeTab === 'general' ? theme.accent : theme.textMuted, borderColor: activeTab === 'general' ? theme.accent : 'transparent' }}
+            >
+                General
+            </button>
+            <button 
+                onClick={() => setActiveTab('team')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'team' ? 'border-blue-500 text-blue-500' : 'border-transparent opacity-50'}`}
+                style={{ color: activeTab === 'team' ? theme.accent : theme.textMuted, borderColor: activeTab === 'team' ? theme.accent : 'transparent' }}
+            >
+                Team
+            </button>
+        </div>
+
+        {/* GENERAL TAB: Visibility & Social Post */}
+        {activeTab === 'general' && (
+            <div className="space-y-6">
+                {/* Visibility Toggle */}
+                <div className={`p-4 rounded-lg border flex items-center justify-between ${isPublic ? 'bg-green-500/10 border-green-500/20' : 'bg-gray-500/5 border-gray-500/20'}`}>
+                    <div className="flex items-center gap-3">
+                        {isPublic ? <Globe size={20} className="text-green-500"/> : <Lock size={20} className="text-gray-500"/>}
+                        <div>
+                            <h4 className="font-bold text-sm" style={{ color: theme.textMain }}>{isPublic ? "Public Project" : "Private Project"}</h4>
+                            <p className="text-[10px] opacity-60" style={{ color: theme.textMuted }}>
+                                {isPublic 
+                                    ? "Visible in Explore Feed. Anyone can view." 
+                                    : "Only invited members can access."}
+                            </p>
+                        </div>
+                    </div>
+                    {isOwner && (
+                        <button 
+                            onClick={() => setIsPublic(!isPublic)}
+                            className={`w-10 h-5 rounded-full relative transition-colors ${isPublic ? 'bg-green-500' : 'bg-gray-600'}`}
+                        >
+                            <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isPublic ? 'left-6' : 'left-1'}`} />
+                        </button>
+                    )}
+                </div>
+
+                {/* Social Post Editor (Only if Public) */}
+                {isPublic && (
+                    <div className="space-y-4 border-t pt-4 animate-in fade-in" style={{ borderColor: theme.border }}>
+                        <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.textMuted }}>Explore Feed Post</h4>
+                            <button 
+                                onClick={handleAiGenerate}
+                                disabled={genLoading}
+                                className="text-[10px] px-2 py-1 rounded bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 flex items-center gap-1 transition-colors border border-purple-500/20"
+                            >
+                                {genLoading ? <Loader2 size={10} className="animate-spin"/> : <Sparkles size={10}/>} Auto-Generate
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <label className="text-[10px] opacity-50 mb-1 block" style={{ color: theme.textMuted }}>Heading</label>
+                            <input 
+                                value={heading} 
+                                onChange={e => setHeading(e.target.value)}
+                                className="w-full p-2 text-sm rounded border bg-transparent focus:ring-1 outline-none" 
+                                placeholder="e.g. Breakthrough in Neural Imaging"
+                                style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }}
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="text-[10px] opacity-50 mb-1 block" style={{ color: theme.textMuted }}>Summary</label>
+                            <textarea 
+                                value={summary} 
+                                onChange={e => setSummary(e.target.value)}
+                                className="w-full p-2 text-sm rounded border bg-transparent h-24 resize-none focus:ring-1 outline-none" 
+                                placeholder="Describe your findings to the community..."
+                                style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }}
+                            />
+                        </div>
+                        
+                        <div>
+                            <label className="text-[10px] opacity-50 mb-1 block" style={{ color: theme.textMuted }}>Tags (comma separated)</label>
+                            <input 
+                                value={tags} 
+                                onChange={e => setTags(e.target.value)}
+                                className="w-full p-2 text-sm rounded border bg-transparent focus:ring-1 outline-none" 
+                                placeholder="#Science, #Tech, #Data"
+                                style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* Save Button */}
+                {isOwner ? (
+                    <button 
+                        onClick={handleUpdate}
+                        disabled={loading || genLoading}
+                        className="w-full py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                        style={{ backgroundColor: theme.accent }}
+                    >
+                        {loading && <Loader2 size={14} className="animate-spin"/>}
+                        {loading ? "Saving..." : "Save Changes"}
+                    </button>
+                ) : (
+                    <p className="text-xs text-center opacity-50" style={{ color: theme.textMuted }}>Only the owner can change settings.</p>
+                )}
+            </div>
+        )}
+
+        {/* TEAM TAB (Invites & Permissions) */}
+        {activeTab === 'team' && (
+            <div className="space-y-6">
+                {/* Invite Form */}
+                <form onSubmit={handleInvite} className="space-y-3 p-4 rounded-lg border border-dashed" style={{ borderColor: theme.border }}>
+                    <h4 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.textMuted }}>Invite Collaborator</h4>
+                    <input 
+                        type="email" 
+                        placeholder="colleague@lab.edu" 
+                        required
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        className="w-full p-2 text-sm rounded border bg-transparent"
+                        style={{ borderColor: theme.border, color: theme.textMain }}
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                        {[
+                            { id: 'canEditLit', label: 'Edit Literature' },
+                            { id: 'canEditData', label: 'Edit Data' },
+                            { id: 'canEditExps', label: 'Edit Experiments' },
+                            { id: 'canManageTeam', label: 'Manage Team' },
+                        ].map(p => (
+                            <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer select-none" style={{ color: theme.textMuted }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={perms[p.id]} 
+                                    onChange={(e) => setPerms({...perms, [p.id]: e.target.checked})}
+                                    className="rounded border-gray-600 bg-transparent"
+                                />
+                                {p.label}
+                            </label>
+                        ))}
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        disabled={teamLoading}
+                        className="w-full py-2 rounded text-xs font-medium text-white flex items-center justify-center gap-2"
+                        style={{ backgroundColor: theme.accent }}
+                    >
+                        {teamLoading && <Loader2 className="animate-spin" size={12}/>} Send Invite
+                    </button>
+                </form>
+
+                {/* Member List */}
+                <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                    <h4 className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: theme.textMuted }}>Current Members</h4>
+                    {memberList.length === 0 && <p className="text-xs opacity-50">No members yet.</p>}
+                    {memberList.map(m => (
+                        <div key={m.id} className="flex justify-between items-center p-2 rounded hover:bg-white/5 transition-colors">
+                            <div>
+                                <div className="text-sm font-medium" style={{ color: theme.textMain }}>{m.user?.name || m.user?.email}</div>
+                                <div className="text-[10px] opacity-50" style={{ color: theme.textMuted }}>{m.role}</div>
+                            </div>
+                            {m.role !== 'OWNER' && (
+                                <button onClick={() => handleRemoveMember(m.id)} className="text-red-500 hover:bg-red-500/10 p-1.5 rounded">
+                                    <Trash2 size={12} />
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+    </Modal>
   );
 };
 
@@ -3507,8 +4446,18 @@ const ResearchOS = () => {
 
   // App State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); // For Project-Level Settings
+  
+  // --- NEW: Edit Mode State ---
+  const [projectToEdit, setProjectToEdit] = useState(null);
+
   const [projects, setProjects] = useState([]); 
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null); // Basic info for list
+  
+  // --- NEW: Active Project & Permissions State ---
+  const [fullProjectData, setFullProjectData] = useState(null); 
+  const [permissions, setPermissions] = useState(null); 
+
   const [activeTab, setActiveTab] = useState('overview');
   const [isDarkMode, setIsDarkMode] = useState(true);
 
@@ -3527,19 +4476,139 @@ const ResearchOS = () => {
     isDarkMode
   }), [currentTheme, isDarkMode]);
   
-  // 1. Fetch Projects
-  useEffect(() => {
+  // --- DATA FETCHING ---
+  const fetchProjects = async () => {
     if (session) {
-      fetch('/api/projects')
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) setProjects(data);
-        })
-        .catch(err => console.error("Failed to load projects", err));
+      try {
+        const res = await fetch('/api/projects');
+        const data = await res.json();
+        if (Array.isArray(data)) setProjects(data);
+      } catch (err) {
+        console.error("Failed to load projects", err);
+      }
     }
+  };
+
+  // Initial Load
+  useEffect(() => {
+    fetchProjects();
   }, [session]);
 
-  // 2. Search Logic
+  // --- HANDLERS: CREATE / EDIT / DELETE ---
+
+  // 1. Open Create Modal (Reset Edit Mode)
+  const openCreate = () => {
+      setProjectToEdit(null);
+      setIsCreateModalOpen(true);
+  };
+
+  // 2. Open Edit Modal (Set Edit Data)
+  const handleEditProjectClick = (proj) => {
+      setProjectToEdit(proj);
+      setIsCreateModalOpen(true);
+  };
+
+  // 3. Unified Save Handler (Handles both Create and Update)
+  const handleSaveProject = async (title, description) => {
+    try {
+        if (projectToEdit) {
+            // --- EDIT MODE ---
+            const res = await fetch(`/api/projects/${projectToEdit.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description })
+            });
+            
+            if (!res.ok) throw new Error("Update failed");
+            const updated = await res.json();
+            
+            // Optimistic update of local list
+            setProjects(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p));
+        } else {
+            // --- CREATE MODE ---
+            const res = await fetch('/api/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description })
+            });
+            
+            if (!res.ok) throw new Error("Create failed");
+            // Refresh list from server to ensure we get everything
+            await fetchProjects();
+        }
+        
+        // Cleanup
+        setIsCreateModalOpen(false);
+        setProjectToEdit(null);
+    } catch (err) {
+        alert("Action failed. Please check your connection.");
+    }
+  };
+
+  // 4. Delete Handler
+  const handleDeleteProject = async (projectId) => {
+      if(!confirm("Are you sure you want to delete this project? This cannot be undone.")) return;
+      
+      // Optimistic delete
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+
+      try {
+          const res = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error("Delete failed");
+      } catch (err) {
+          alert("Failed to delete project");
+          fetchProjects(); // Revert logic on failure
+      }
+  };
+
+  // --- PROJECT SELECTION & NAVIGATION ---
+
+  const handleSelectProject = async (project) => {
+    setSelectedProject(project);
+    setFullProjectData(null); 
+    setPermissions(null); 
+    
+    try {
+        const res = await fetch(`/api/projects/${project.id}`);
+        const data = await res.json();
+        
+        if (data.error) throw new Error(data.error);
+        
+        setFullProjectData(data);
+        
+        // Use permissions from API, or fallback to defaults
+        let perms = data.permissions || {
+            canEditLit: false, canEditData: false, 
+            canEditExps: false, canManageTeam: false,
+            canEditTasks: false, canEditArtifacts: false
+        };
+        
+        // Force owner permissions if applicable
+        if (data.members?.some(m => m.user.email === session?.user?.email && m.role === 'OWNER')) {
+            perms = { isOwner: true, canEditLit: true, canEditData: true, canEditExps: true, canManageTeam: true, canEditTasks: true, canEditArtifacts: true };
+        }
+
+        setPermissions(perms);
+        setActiveTab('overview');
+
+    } catch (e) {
+        console.error(e);
+        setSelectedProject(null); // Reset if fetch fails
+    }
+  };
+
+  const handleLogout = () => {
+    signOut(); 
+    setSelectedProject(null);
+    setShowAuth(false);
+  };
+
+  const handleBackToProjects = () => {
+    setSelectedProject(null);
+    setFullProjectData(null);
+  };
+
+  // --- SEARCH LOGIC ---
   useEffect(() => {
     if (!searchQuery.trim() || !selectedProject) {
         setSearchResults(null);
@@ -3556,47 +4625,6 @@ const ResearchOS = () => {
     return () => clearTimeout(timer);
   }, [searchQuery, selectedProject]);
 
-  // Click Outside Search
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-        if (searchRef.current && !searchRef.current.contains(event.target)) {
-            setIsSearchOpen(false);
-        }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Handlers
-  const handleCreateProject = async (title, description) => {
-    try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description })
-      });
-      if (!res.ok) throw new Error("Failed");
-      const newProject = await res.json();
-      setProjects([newProject, ...projects]);
-      setIsCreateModalOpen(false);
-    } catch (err) { alert("Failed to create project"); }
-  };
-
-  const handleLogout = () => {
-    signOut(); 
-    setSelectedProject(null);
-    setShowAuth(false); // Reset to landing page on logout
-  };
-
-  const handleSelectProject = (project) => {
-    setSelectedProject(project);
-    setActiveTab('overview');
-  };
-
-  const handleBackToProjects = () => {
-    setSelectedProject(null);
-  };
-
   const handleSearchResultClick = (type) => {
     setIsSearchOpen(false);
     setSearchQuery("");
@@ -3609,13 +4637,24 @@ const ResearchOS = () => {
 
   // Helper: Render Tab Content
   const renderContent = () => {
+    if (!fullProjectData || !permissions) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center opacity-50">
+                <Loader2 className="animate-spin mb-2" size={32} />
+                <span className="text-xs">Loading Workspace...</span>
+            </div>
+        );
+    }
+
+    const props = { project: fullProjectData, permissions };
+
     switch (activeTab) {
-      case 'overview': return <OverviewHub project={selectedProject} />;
-      case 'literature': return <LiteratureManager project={selectedProject} />;
-      case 'datasets': return <DatasetRegistry project={selectedProject} />;
-      case 'experiments': return <Experiments project={selectedProject} />;
-      case 'artifacts': return <Artifacts project={selectedProject} />;
-      default: return <OverviewHub project={selectedProject} />;
+      case 'overview': return <OverviewHub {...props} />;
+      case 'literature': return <LiteratureManager {...props} />;
+      case 'datasets': return <DatasetRegistry {...props} />;
+      case 'experiments': return <Experiments {...props} />;
+      case 'artifacts': return <Artifacts {...props} />;
+      default: return <OverviewHub {...props} />;
     }
   };
 
@@ -3638,7 +4677,6 @@ const ResearchOS = () => {
         !showAuth ? (
             <LandingPage onLogin={() => setShowAuth(true)} />
         ) : (
-            // Passing empty fn since session update handles the redirect automatically
             <AuthScreen onLogin={() => {}} /> 
         )
       ) : !selectedProject ? (
@@ -3647,50 +4685,43 @@ const ResearchOS = () => {
           <ProjectSelectionScreen 
             projects={projects}
             onSelectProject={handleSelectProject}
-            onOpenCreateModal={() => setIsCreateModalOpen(true)}
+            
+            // Open Modal in Create Mode
+            onOpenCreateModal={openCreate}
+            
             onLogout={handleLogout}
             toggleTheme={() => setIsDarkMode(!isDarkMode)}
             isDarkMode={isDarkMode}
+            onRefreshProjects={fetchProjects}
+            
+            // Pass Edit/Delete Handlers
+            onEdit={handleEditProjectClick} 
+            onDelete={handleDeleteProject}
           />
+          
           <CreateProjectModal 
             isOpen={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}
-            onSubmit={handleCreateProject}
+            onSubmit={handleSaveProject} // Handles both Create & Edit
             theme={currentTheme}
+            initialData={projectToEdit}  // Pass data for editing
           />
         </>
       ) : (
         // --- SHOW MAIN APP ---
         <div className="flex h-screen w-screen overflow-hidden font-sans transition-colors duration-300" style={{ backgroundColor: currentTheme.bg, color: currentTheme.textMain }}>
           
-          {/* SIDEBAR (With Footer Settings) */}
+          {/* SIDEBAR */}
           <div className="w-[240px] flex flex-col h-full border-r fixed left-0 top-0 bottom-0 z-20" style={{ backgroundColor: currentTheme.bgSidebar, borderColor: currentTheme.border }}>
              <Sidebar 
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab} 
                 projectName={selectedProject?.title} 
                 projectColor={selectedProject?.color}
-                onLogout={handleLogout} // "Back" button
+                onLogout={handleBackToProjects}
+                onOpenSettings={() => setIsSettingsModalOpen(true)}
+                permissions={permissions}
              />
-             
-             {/* Sidebar Footer Settings */}
-             <div className="p-4 border-t mt-auto" style={{ borderColor: currentTheme.border }}>
-                <div className="text-[10px] font-bold uppercase tracking-wider mb-2 opacity-50 pl-2">Settings</div>
-                <div className="space-y-1">
-                    <button onClick={() => setIsDarkMode(!isDarkMode)} className="w-full flex items-center gap-3 px-3 py-2 text-xs rounded-lg hover:bg-white/5 transition-colors opacity-70 hover:opacity-100">
-                        {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
-                        <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
-                    </button>
-                    <button onClick={() => alert("Change Password Coming Soon")} className="w-full flex items-center gap-3 px-3 py-2 text-xs rounded-lg hover:bg-white/5 transition-colors opacity-70 hover:opacity-100">
-                        <Lock size={14} />
-                        <span>Change Password</span>
-                    </button>
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 text-xs rounded-lg hover:bg-red-500/10 text-red-500 transition-colors">
-                        <LogOut size={14} />
-                        <span>Log Out</span>
-                    </button>
-                </div>
-             </div>
           </div>
 
           {/* MAIN CONTENT */}
@@ -3724,7 +4755,6 @@ const ResearchOS = () => {
                     onClick={() => { setIsSearchOpen(true); }}
                 >
                     <Search size={16} color={currentTheme.textMuted} className="shrink-0" />
-                    
                     {isSearchOpen ? (
                         <input 
                             autoFocus
@@ -3737,49 +4767,29 @@ const ResearchOS = () => {
                     ) : (
                         <span className="text-sm opacity-50 select-none hidden sm:block">Search</span>
                     )}
-
                     {isSearchOpen && (
-                        <div className="flex items-center gap-2 shrink-0">
-                            {isSearching ? <Loader2 size={14} className="animate-spin opacity-50" /> : null}
-                            <button onClick={(e) => { e.stopPropagation(); setSearchQuery(""); setIsSearchOpen(false); }}>
-                                <X size={14} className="opacity-50 hover:opacity-100"/>
-                            </button>
-                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); setSearchQuery(""); setIsSearchOpen(false); }}>
+                            <X size={14} className="opacity-50 hover:opacity-100"/>
+                        </button>
                     )}
                 </div>
 
                 {/* SEARCH RESULTS DROPDOWN */}
                 {isSearchOpen && searchResults && searchQuery && (
                     <div className="absolute top-full right-0 w-full mt-2 rounded-xl border shadow-xl overflow-hidden max-h-96 overflow-y-auto z-50 animate-in fade-in slide-in-from-top-2" style={{ backgroundColor: currentTheme.cardBg, borderColor: currentTheme.border }}>
-                        
                         {Object.values(searchResults).every(arr => !arr || arr.length === 0) && (
                             <div className="p-4 text-center text-xs opacity-50">No results found.</div>
                         )}
-
-                        {/* Results Groups */}
                         {['papers', 'tasks', 'experiments', 'datasets', 'artifacts'].map(category => {
                             const items = searchResults[category];
                             if (!items || items.length === 0) return null;
                             const typeMap = { papers: 'paper', tasks: 'task', experiments: 'experiment', datasets: 'dataset', artifacts: 'artifact' };
-                            
                             return (
                                 <div key={category} className="p-2 border-b last:border-0" style={{ borderColor: currentTheme.border }}>
                                     <div className="text-[10px] font-bold uppercase tracking-wider opacity-50 px-2 mb-1">{category}</div>
                                     {items.map(item => (
-                                        <div 
-                                            key={item.id} 
-                                            onClick={() => handleSearchResultClick(typeMap[category])} 
-                                            className="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer text-sm transition-colors"
-                                        >
-                                            {category === 'papers' && <BookOpen size={14} className="opacity-50"/>}
-                                            {category === 'tasks' && <Check size={14} className="opacity-50"/>}
-                                            {category === 'experiments' && <FlaskConical size={14} className="opacity-50"/>}
-                                            {category === 'datasets' && <Database size={14} className="opacity-50"/>}
-                                            {category === 'artifacts' && <FileText size={14} className="opacity-50"/>}
-                                            
-                                            <span className="truncate" style={{color: currentTheme.textMain}}>
-                                                {category === 'datasets' ? item.file?.name : item.title}
-                                            </span>
+                                        <div key={item.id} onClick={() => handleSearchResultClick(typeMap[category])} className="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer text-sm transition-colors">
+                                            <span className="truncate" style={{color: currentTheme.textMain}}>{category === 'datasets' ? item.file?.name : item.title}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -3797,6 +4807,20 @@ const ResearchOS = () => {
             </main>
 
           </div>
+          {/* --- ADD THIS BLOCK --- */}
+          {fullProjectData && (
+              <ProjectSettingsModal 
+                isOpen={isSettingsModalOpen}
+                onClose={() => setIsSettingsModalOpen(false)}
+                project={fullProjectData}
+                isOwner={permissions?.isOwner}
+                onUpdateProject={(updated) => {
+                    setFullProjectData({ ...fullProjectData, ...updated });
+                    // Refresh main list to reflect changes (e.g., public status)
+                    fetchProjects(); 
+                }}
+              />
+          )}
         </div>
       )}
     </ThemeContext.Provider>

@@ -13,13 +13,16 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String    @unique
-  passwordHash  String
+  passwordHash  String?
   role          String    @default("VIEWER")
   createdAt     DateTime  @default(now())
 
   memberships   Member[]
   tasks         Task[]
   audits        Audit[]
+  // --- ADD THESE TWO LINES ---
+  likes         Like[]
+  comments      Comment[]
 }
 
 model Project {
@@ -32,6 +35,17 @@ model Project {
   // --- NEW: Visibility Fields ---
   isPublic    Boolean  @default(false)  // If true, anyone can view (Read-Only)
   publishedAt DateTime?                 // Date it was made public
+  // ------------------------------
+  // --- NEW: Forking Field ---
+  forkedFromId  String?  // Stores ID of original project
+  // --------------------------
+  // --- NEW: Social Feed Fields ---
+  postHeading   String?   // e.g. "Breakthrough in Neural Imaging"
+  postSummary   String?   @db.Text // Detailed paragraph
+  tags          String[]  // e.g. ["#Neuroscience", "#AI"]
+  
+  likes         Like[]
+  comments      Comment[]
   // ------------------------------
   ownerId     String
   createdAt   DateTime @default(now())
@@ -47,17 +61,48 @@ model Project {
   artifacts   Artifact[]
 }
 
+// --- NEW MODELS ---
+model Like {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model Member {
   id        String   @id @default(cuid())
   projectId String
   userId    String
   role      String
+  // --- NEW: Membership Status ---
+  status    String   @default("active") // "active" or "invited"
+  // ------------------------------
   // --- NEW: Granular Permissions ---
   canEditLit    Boolean @default(false)
   canEditData   Boolean @default(false)
   canEditExps   Boolean @default(false)
   canManageTeam Boolean @default(false) // Can they invite others?
   // --------------------------------
+  // --- NEW PERMISSIONS ---
+  canEditTasks     Boolean @default(false)
+  canEditArtifacts Boolean @default(false)
+  // -----------------------
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
