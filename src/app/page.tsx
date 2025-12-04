@@ -1013,7 +1013,7 @@ const ProjectSelectionScreen = ({
           {viewMode === 'explore' && (
              <>
                 {exploreLoading ? (
-                    <div className="col-span-full py-20 text-center opacity-50 flex flex-col items-center gap-3"><Loader2 className="animate-spin" size={24} /><span className="text-xs">Fetching feed...</span></div>
+                    <div className="col-span-full py-20 text-center opacity-50 flex flex-col items-center gap-3" style={{ color: theme.textMain }}><Loader2 className="animate-spin" size={24} /><span className="text-xs">Fetching feed...</span></div>
                 ) : (
                     <div className="max-w-2xl mx-auto space-y-8 w-full col-span-full">
                         {publicProjects.map((proj, index) => (
