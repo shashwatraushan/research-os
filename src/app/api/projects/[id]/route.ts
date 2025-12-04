@@ -106,6 +106,10 @@ export async function PATCH(
   if (body.title !== undefined) dataToUpdate.title = body.title;
   if (body.description !== undefined) dataToUpdate.description = body.description;
   if (body.color !== undefined) dataToUpdate.color = body.color;
+  // Social Feed Info (THIS WAS MISSING)
+  if (body.postHeading !== undefined) dataToUpdate.postHeading = body.postHeading;
+  if (body.postSummary !== undefined) dataToUpdate.postSummary = body.postSummary;
+  if (body.tags !== undefined) dataToUpdate.tags = body.tags;
   
   // Handle Visibility Toggle
   if (body.isPublic !== undefined) {

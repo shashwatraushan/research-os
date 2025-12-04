@@ -23,6 +23,14 @@ model User {
   // --- ADD THESE TWO LINES ---
   likes         Like[]
   comments      Comment[]
+  // --- NEW PROFILE FIELDS ---
+  image         String?   // For LinkedIn/Google profile pic
+  bio           String?
+  headline      String?   // e.g. "Research Scientist at MIT"
+  company       String?
+  website       String?
+  location      String?
+  // --------------------------
 }
 
 model Project {

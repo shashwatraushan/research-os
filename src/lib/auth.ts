@@ -73,7 +73,7 @@ export const authOptions: AuthOptions = {
               data: {
                 email: user.email,
                 name: user.name,
-                role: "VIEWER", // Default role
+                role: "OWNER", // Default role
                 // passwordHash remains null
               }
             });

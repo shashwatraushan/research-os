@@ -9,12 +9,13 @@ import {
   Trash2, Pencil, Maximize2, Paperclip, ExternalLink,
   FileText, Clock, AlertCircle, X, Sparkles, Loader2, Bot,
   ArrowRight, Filter, Users, ArrowUpDown, Sun, Moon, Key, Lock,
-  ClipboardList,Share2, Box, Atom, Brain, Cpu, Rocket, Microscope, Layers, Activity, GitBranch, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
+  ClipboardList,Share2, UserIcon, Box, Atom, Brain, Cpu, Rocket, Microscope, Layers, Activity, GitBranch, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
   MoreHorizontal, Link as LinkIcon, CheckSquare, PlayCircle, Zap, Shield, Globe, StopCircle, Archive, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, BarChart, Bar, XAxis, Tooltip, ResponsiveContainer 
 } from 'recharts';
+import NetworkBackground from "@/components/NetworkBackground";
 
 /**
  * THEME SYSTEM
@@ -26,7 +27,7 @@ const DARK_THEME = {
   border: '#22262E',
   textMain: '#F7F8F8',
   textMuted: '#8A8F98',
-  accent: '#5E6AD2',
+  accent: '#9333EA',
   success: '#4ADE80',
   danger: '#F87171',
   warning: '#FBBF24',
@@ -284,8 +285,12 @@ const AuthScreen = ({ onLogin }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: theme.bg }}>
-      <div className="w-full max-w-md p-8 rounded-xl shadow-2xl border" 
+    <div className="flex items-center justify-center min-h-screen relative overflow-hidden"> 
+    <NetworkBackground />
+    <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/30 blur-[120px] rounded-full pointer-events-none z-0"
+      />
+      <div className="w-full max-w-md p-8 rounded-xl shadow-2xl border relative z-10" 
            style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
         
         <div className="text-center mb-8">
@@ -546,6 +551,23 @@ const ProjectSelectionScreen = ({
   
   // --- MENU STATE (For Edit/Delete) ---
   const [activeMenuId, setActiveMenuId] = useState(null);
+  
+  // --- NEW: Infinite Scroll Ref & Logic ---
+  const observerRef = useRef(null);
+
+  useEffect(() => {
+    if (viewMode !== 'explore') return;
+
+    const observer = new IntersectionObserver((entries) => {
+        // If bottom is visible AND we have data, append current data to itself
+        if (entries[0].isIntersecting && !exploreLoading && publicProjects.length > 0) {
+            setPublicProjects(prev => [...prev, ...prev]); 
+        }
+    }, { threshold: 0.1 });
+
+    if (observerRef.current) observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [publicProjects, exploreLoading, viewMode]);
 
   // --- CLICK OUTSIDE LISTENER (FIXED) ---
   useEffect(() => {
@@ -586,7 +608,8 @@ const ProjectSelectionScreen = ({
   useEffect(() => {
     if (viewMode === 'explore') {
         setExploreLoading(true);
-        fetch('/api/projects/public')
+        // Force fresh fetch with timestamp
+        fetch(`/api/projects/public?t=${Date.now()}`, { cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data)) setPublicProjects(data);
@@ -966,54 +989,95 @@ const ProjectSelectionScreen = ({
                     <div className="col-span-full py-20 text-center opacity-50 flex flex-col items-center gap-3"><Loader2 className="animate-spin" size={24} /><span className="text-xs">Fetching feed...</span></div>
                 ) : (
                     <div className="max-w-2xl mx-auto space-y-8 w-full col-span-full">
-                        {publicProjects.map((proj) => (
-                            <div key={proj.id} className="rounded-xl border overflow-hidden transition-all hover:shadow-lg" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
-                                <div className="p-6 border-b" style={{ borderColor: theme.border }}>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">{proj.owner?.name?.[0]?.toUpperCase() || "U"}</div>
-                                            <div><h3 className="font-bold text-base" style={{ color: theme.textMain }}>{proj.postHeading || proj.title}</h3><p className="text-xs opacity-60" style={{ color: theme.textMuted }}>{proj.owner?.name || "Researcher"} • {new Date(proj.publishedAt || proj.updatedAt).toLocaleDateString()}</p></div>
-                                        </div>
-                                        <button onClick={() => onSelectProject(proj)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border hover:bg-white/5 transition-colors" style={{ borderColor: theme.border, color: theme.textMain }}>View Project <ArrowRight size={12}/></button>
-                                    </div>
-                                    <p className="text-sm leading-relaxed mb-4 whitespace-pre-wrap" style={{ color: theme.textMain }}>{proj.postSummary || proj.description}</p>
-                                    <div className="flex flex-wrap gap-2">{(proj.tags || []).map((tag, i) => <span key={i} className="text-xs px-2 py-1 rounded-md bg-blue-500/10 text-blue-500">#{tag.replace('#','')}</span>)}</div>
-                                </div>
+                        {publicProjects.map((proj, index) => (
+                          <div key={`${proj.id}-${index}`} className="flex flex-col rounded-xl border overflow-hidden transition-all hover:shadow-lg" style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
+                            {/* Top Section: Header + Text */}
+                            <div className="p-6 border-b shrink-0" style={{ borderColor: theme.border }}>
+                              <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                  {/* --- UPDATED AVATAR WITH LINK --- */}
+                                  <div 
+                                  className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); 
+                                    if (proj.owner?.id) {
+        window.location.href = `/profile/${proj.owner.id}`; 
+    } else {
+        console.warn("Owner ID missing for project:", proj.id);
+    }
+  }}
+                                  >
+                                    {proj.owner?.image ? (
+                                      <img src={proj.owner.image} alt={proj.owner.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                      proj.owner?.name?.[0]?.toUpperCase() || "U"
+                                      )}
+                                      </div>
+                                      {/* -------------------------------- */}
+                                      <div>
+                                        {/* Correctly displaying Heading if available, else Title */}
+                        <h3 className="font-bold text-base" style={{ color: theme.textMain }}>{proj.postHeading || proj.title}</h3>
+                        <p className="text-xs opacity-60" style={{ color: theme.textMuted }}>{proj.owner?.name} • {new Date(proj.publishedAt || proj.updatedAt).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                <button onClick={() => onSelectProject(proj)} className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full border hover:bg-white/5 transition-colors" style={{ borderColor: theme.border, color: theme.textMain }}>View <ArrowRight size={12}/></button>
+            </div>
+            
+            {/* Correctly displaying Summary if available, else Description */}
+            <p className="text-sm leading-relaxed mb-4 whitespace-pre-wrap" style={{ color: theme.textMain }}>{proj.postSummary || proj.description}</p>
+            
+            <div className="flex flex-wrap gap-2">{(proj.tags || []).map((tag, i) => <span key={i} className="text-xs px-2 py-1 rounded-md bg-blue-500/10 text-blue-500">#{tag.replace('#','')}</span>)}</div>
+        </div>
 
-                                {/* Collage */}
-                                {proj.artifacts && proj.artifacts.length > 0 && (
-                                    <div className="h-64 bg-black/50 grid grid-cols-2 gap-0.5 cursor-pointer border-b" style={{ borderColor: theme.border }} onClick={() => onSelectProject(proj)}>
-                                        <div className="relative h-full bg-gray-900 overflow-hidden">{proj.artifacts[0] && <img src={proj.artifacts[0].url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />}</div>
-                                        <div className="grid grid-rows-2 gap-0.5 h-full">
-                                            <div className="relative bg-gray-900 h-full overflow-hidden">{proj.artifacts[1] && <img src={proj.artifacts[1].url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />}</div>
-                                            <div className="relative bg-gray-900 h-full overflow-hidden">{proj.artifacts[2] && <img src={proj.artifacts[2].url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />}{proj.artifacts.length > 3 && <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-sm backdrop-blur-sm">+{proj.artifacts.length - 3}</div>}</div>
-                                        </div>
-                                    </div>
-                                )}
+        {/* --- MODIFIED: SINGLE IMAGE SECTION --- */}
+        {proj.artifacts && proj.artifacts.length > 0 && (
+            <div 
+                className="h-64 w-full shrink-0 bg-gray-900 cursor-pointer border-b overflow-hidden relative group" 
+                style={{ borderColor: theme.border }} 
+                onClick={() => onSelectProject(proj)}
+            >
+                <img 
+                    src={proj.artifacts[0].url} 
+                    alt="Project Artifact" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
+                
+                {/* Optional: Badge if there are more images inside */}
+                {proj.artifacts.length > 1 && (
+                    <div className="absolute bottom-3 right-3 bg-black/60 text-white text-[10px] font-bold px-2 py-1 rounded-md backdrop-blur-sm border border-white/10">
+                        + {proj.artifacts.length - 1} more
+                    </div>
+                )}
+            </div>
+        )}
+        {/* --------------------------------------- */}
+        
+        {/* Footer Actions */}
+        {/* FIX 3: Added 'mt-auto' to push footer to the very bottom */}
+        <div className="p-4 flex items-center gap-6 text-xs border-t mt-auto relative bg-inherit" style={{ color: theme.textMuted, borderColor: theme.border }}>
+            <button onClick={(e) => handleLike(proj, e)} className={`flex items-center gap-2 transition-colors group ${proj.isLikedByMe ? 'text-red-500' : 'hover:text-red-500'}`}><div className={`p-1.5 rounded-full transition-colors ${proj.isLikedByMe ? 'bg-red-500/10' : 'group-hover:bg-red-500/10'}`}><CheckCircle2 size={16} className={proj.isLikedByMe ? "fill-current" : ""} /></div>{proj._count?.likes || 0} Likes</button>
+            <button onClick={(e) => handleToggleComments(proj.id, e)} className={`flex items-center gap-2 transition-colors group ${openCommentsId === proj.id ? 'text-blue-500' : 'hover:text-blue-500'}`}><div className={`p-1.5 rounded-full transition-colors ${openCommentsId === proj.id ? 'bg-blue-500/10' : 'group-hover:bg-blue-500/10'}`}><FileText size={16} /></div>{proj._count?.comments || 0} Comments</button>
+            <button onClick={(e) => handleForkProject(proj, e)} disabled={forkingId === proj.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full border hover:bg-white/5 transition-colors disabled:opacity-50 ml-auto" style={{ borderColor: theme.border, color: theme.textMain }}>{forkingId === proj.id ? <Loader2 size={14} className="animate-spin"/> : <Share2 size={14} />}<span className="font-medium">{forkingId === proj.id ? "Forking..." : "Fork"}</span></button>
+        </div>
 
-                                {/* Footer Actions */}
-                                <div className="p-4 flex items-center gap-6 text-xs border-t relative" style={{ color: theme.textMuted, borderColor: theme.border }}>
-                                    <button onClick={(e) => handleLike(proj, e)} className={`flex items-center gap-2 transition-colors group ${proj.isLikedByMe ? 'text-red-500' : 'hover:text-red-500'}`}><div className={`p-1.5 rounded-full transition-colors ${proj.isLikedByMe ? 'bg-red-500/10' : 'group-hover:bg-red-500/10'}`}><CheckCircle2 size={16} className={proj.isLikedByMe ? "fill-current" : ""} /></div>{proj._count?.likes || 0} Likes</button>
-                                    <button onClick={(e) => handleToggleComments(proj.id, e)} className={`flex items-center gap-2 transition-colors group ${openCommentsId === proj.id ? 'text-blue-500' : 'hover:text-blue-500'}`}><div className={`p-1.5 rounded-full transition-colors ${openCommentsId === proj.id ? 'bg-blue-500/10' : 'group-hover:bg-blue-500/10'}`}><FileText size={16} /></div>{proj._count?.comments || 0} Comments</button>
-                                    <button onClick={(e) => handleForkProject(proj, e)} disabled={forkingId === proj.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full border hover:bg-white/5 transition-colors disabled:opacity-50 ml-auto" style={{ borderColor: theme.border, color: theme.textMain }}>{forkingId === proj.id ? <Loader2 size={14} className="animate-spin"/> : <Share2 size={14} />}<span className="font-medium">{forkingId === proj.id ? "Forking..." : "Fork"}</span></button>
-                                </div>
-
-                                {/* Comments */}
-                                {openCommentsId === proj.id && (
-                                    <div className="border-t p-4 animate-in slide-in-from-top-2" style={{ borderColor: theme.border, backgroundColor: theme.cardBg }}>
-                                        <div className="max-h-48 overflow-y-auto mb-3 custom-scrollbar space-y-3">
-                                            {fetchingComments ? <div className="text-center py-4 opacity-50 flex items-center justify-center gap-2"><Loader2 size={12} className="animate-spin"/> Loading...</div> : currentComments.length === 0 ? <div className="text-center py-4 opacity-50 text-xs">No comments yet.</div> : currentComments.map(c => (
-                                                <div key={c.id} className="flex gap-2 items-start"><div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0">{c.user?.name?.[0] || "?"}</div><div className="flex-1 min-w-0"><div className="flex items-baseline gap-2"><span className="text-xs font-bold" style={{ color: theme.textMain }}>{c.user?.name}</span><span className="text-[9px] opacity-40">{new Date(c.createdAt).toLocaleDateString()}</span></div><p className="text-xs mt-0.5" style={{ color: theme.textMain }}>{c.text}</p></div></div>
-                                            ))}
-                                        </div>
-                                        <div className="flex gap-2 pt-2 border-t" style={{ borderColor: theme.border }} onClick={(e) => e.stopPropagation()}>
-                                            <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write a comment..." className="flex-1 bg-transparent border rounded px-3 py-2 text-xs outline-none focus:ring-1 transition-all" style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }} onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(proj.id, e); }}}/>
-                                            <button onClick={(e) => handleSubmitComment(proj.id, e)} disabled={!commentText.trim() || commentLoading} className="px-3 py-1 rounded text-white text-xs font-bold disabled:opacity-50 transition-opacity" style={{ backgroundColor: theme.accent }}>{commentLoading ? <Loader2 size={12} className="animate-spin"/> : "Post"}</button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+        {/* Comments Section */}
+        {openCommentsId === proj.id && (
+            <div className="border-t p-4 shrink-0" style={{ borderColor: theme.border, backgroundColor: theme.cardBg }}>
+                <div className="max-h-48 overflow-y-auto mb-3 custom-scrollbar space-y-3">
+                    {fetchingComments ? <div className="text-center py-4 opacity-50 flex items-center justify-center gap-2"><Loader2 size={12} className="animate-spin"/> Loading...</div> : currentComments.length === 0 ? <div className="text-center py-4 opacity-50 text-xs">No comments yet.</div> : currentComments.map(c => (
+                        <div key={c.id} className="flex gap-2 items-start"><div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0">{c.user?.name?.[0] || "?"}</div><div className="flex-1 min-w-0"><div className="flex items-baseline gap-2"><span className="text-xs font-bold" style={{ color: theme.textMain }}>{c.user?.name}</span><span className="text-[9px] opacity-40">{new Date(c.createdAt).toLocaleDateString()}</span></div><p className="text-xs mt-0.5" style={{ color: theme.textMain }}>{c.text}</p></div></div>
+                    ))}
+                </div>
+                <div className="flex gap-2 pt-2 border-t" style={{ borderColor: theme.border }} onClick={(e) => e.stopPropagation()}>
+                    <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write a comment..." className="flex-1 bg-transparent border rounded px-3 py-2 text-xs outline-none focus:ring-1 transition-all" style={{ borderColor: theme.border, color: theme.textMain, '--tw-ring-color': theme.accent }} onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(proj.id, e); }}}/>
+                    <button onClick={(e) => handleSubmitComment(proj.id, e)} disabled={!commentText.trim() || commentLoading} className="px-3 py-1 rounded text-white text-xs font-bold disabled:opacity-50 transition-opacity" style={{ backgroundColor: theme.accent }}>{commentLoading ? <Loader2 size={12} className="animate-spin"/> : "Post"}</button>
+                </div>
+            </div>
+        )}
+    </div>
+))}
+{/* --- NEW: Invisible Trigger for Infinite Scroll --- */}
+<div ref={observerRef} className="h-10 w-full transparent pointer-events-none" />
                     </div>
                 )}
              </>
@@ -1045,9 +1109,17 @@ const ProjectSelectionScreen = ({
                     <Lock size={14} />
                     <span>Change Password</span>
                 </button>
-
+ 
                 <div className="h-[1px] w-full my-1 opacity-20" style={{ backgroundColor: theme.border }}></div>
-
+                {/* Add inside the Settings Popup Menu in ProjectSelectionScreen */}
+                <button 
+                onClick={() => window.location.href = '/profile'} 
+                className="w-full flex items-center gap-3 px-3 py-2 text-xs rounded-lg hover:bg-white/5 transition-colors text-left"
+                style={{ color: theme.textMain }}
+                >
+                  <UserIcon size={14} />
+                  <span>My Profile</span>
+                  </button> 
                 <button 
                     onClick={onLogout} 
                     className="w-full flex items-center gap-3 px-3 py-2 text-xs rounded-lg hover:bg-red-500/10 text-red-500 transition-colors text-left"
@@ -1057,7 +1129,7 @@ const ProjectSelectionScreen = ({
                 </button>
             </div>
         )}
-
+        
         <button 
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             className={`p-3 rounded-full shadow-lg border transition-all hover:scale-105 ${isSettingsOpen ? 'rotate-90' : ''}`}
@@ -4131,6 +4203,8 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, isOwner, onUpdateProje
     canEditLit: false,
     canEditData: false,
     canEditExps: false,
+    canEditTasks: false,      // <--- ADD THIS
+    canEditArtifacts: false,  // <--- ADD THIS
     canManageTeam: false
   });
 
@@ -4387,6 +4461,8 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, isOwner, onUpdateProje
                             { id: 'canEditLit', label: 'Edit Literature' },
                             { id: 'canEditData', label: 'Edit Data' },
                             { id: 'canEditExps', label: 'Edit Experiments' },
+                            { id: 'canEditTasks', label: 'Edit Tasks' },       // <--- NEW
+                            { id: 'canEditArtifacts', label: 'Edit Artifacts' }, // <--- NEW
                             { id: 'canManageTeam', label: 'Manage Team' },
                         ].map(p => (
                             <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer select-none" style={{ color: theme.textMuted }}>
@@ -4488,6 +4564,25 @@ const ResearchOS = () => {
       }
     }
   };
+  
+  // --- NEW: Handle Incoming Project Links (Deep Linking) ---
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const projectIdFromUrl = searchParams.get('projectId');
+    
+    // If we have an ID in URL and we haven't selected a project yet
+    if (projectIdFromUrl && !selectedProject) {
+        // 1. Create a temporary placeholder so the UI shows "Loading..." immediately
+        const placeholder = { id: projectIdFromUrl, title: "Loading Project...", color: "#5E6AD2" };
+        
+        // 2. Trigger selection logic
+        handleSelectProject(placeholder);
+        
+        // 3. Clean up URL (remove ?projectId=... so refreshing doesn't get stuck)
+        window.history.replaceState(null, '', '/');
+    }
+  }, [searchParams]); // Run whenever URL params change
 
   // Initial Load
   useEffect(() => {
@@ -4576,6 +4671,15 @@ const ResearchOS = () => {
         
         setFullProjectData(data);
         
+        // --- FIX: Update selectedProject with the REAL title from the DB ---
+        setSelectedProject(prev => ({
+            ...prev,
+            id: data.id,
+            title: data.title, // <--- This overwrites "Loading Project..."
+            color: data.color
+        }));
+        // ------------------------------------------------------------------
+
         // Use permissions from API, or fallback to defaults
         let perms = data.permissions || {
             canEditLit: false, canEditData: false, 
