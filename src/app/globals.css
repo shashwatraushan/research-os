@@ -1,9 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* ADD THIS TO THE BOTTOM */
+/* Force Google reCAPTCHA Badge to visible and top layer */
 .grecaptcha-badge { 
   visibility: visible !important;
-  z-index: 2147483647 !important; /* Max integer value to sit on top of everything */
+  opacity: 1 !important;
+  z-index: 2147483647 !important; /* Max integer value */
   position: fixed !important;
+  display: block !important; /* Ensure it's not set to none */
 }
