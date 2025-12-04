@@ -1,7 +1,7 @@
 "use client";
 import { signIn, useSession, signOut } from "next-auth/react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import React, { useState, useEffect, useMemo, createContext, useContext, useRef } from 'react';
+import React, { useState, useEffect, useMemo, createContext, useContext, useRef, Suspense} from 'react';
 import { useSearchParams, useRouter } from 'next/navigation'; // <--- ADD THIS
 import { 
   LayoutGrid, BookOpen, Database, FlaskConical, AreaChart, 
@@ -4514,7 +4514,7 @@ const ProjectSettingsModal = ({ isOpen, onClose, project, isOwner, onUpdateProje
 /**
  * MAIN APP SHELL (Final: Landing Page -> Custom Auth -> App)
  */
-const ResearchOS = () => {
+const ResearchOSContent = () => {
   const { data: session } = useSession();
   
   // NEW: State to toggle between Landing Page and Custom Auth Screen
@@ -4928,6 +4928,19 @@ const ResearchOS = () => {
         </div>
       )}
     </ThemeContext.Provider>
+  );
+};
+
+// --- NEW WRAPPER FOR SUSPENSE ---
+const ResearchOS = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0B0E14] flex items-center justify-center">
+         <Loader2 className="animate-spin text-[#5E6AD2]" size={40} />
+      </div>
+    }>
+      <ResearchOSContent />
+    </Suspense>
   );
 };
 
