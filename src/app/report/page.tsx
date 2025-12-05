@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useMemo, Suspense } from "react"; // <--- Added Suspense import
+import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { 
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer 
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip
 } from 'recharts';
-import { Loader2, Quote, Link as LinkIcon, Calendar, Users, CheckCircle2, Activity } from 'lucide-react';
+import { Loader2, Quote, Link as LinkIcon, Calendar, Users, CheckCircle2, Activity, Check, Database, FlaskConical } from 'lucide-react';
 import { GiArchiveResearch } from "react-icons/gi"; 
 
 // --- 1. UTILITIES ---
@@ -111,7 +111,7 @@ const HeatmapViz = ({ data }: { data: any }) => {
     );
 };
 
-// --- 3. CONTENT COMPONENT (Renamed from Default Export) ---
+// --- 3. REPORT LOGIC ---
 
 function ReportContent() {
   const searchParams = useSearchParams();
@@ -312,7 +312,7 @@ function ReportContent() {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                    {project.papers?.map((p: any) => (
+                    {project.papers?.map((p: any, i: number) => (
                         <tr key={p.id}>
                             <td className="p-4 font-medium text-slate-900">{p.title}</td>
                             <td className="p-4 text-slate-500">{p.authors}</td>
@@ -418,14 +418,13 @@ function ReportContent() {
   );
 }
 
-// --- 4. DEFAULT EXPORT (WRAPPED FOR SUSPENSE) ---
+// --- 4. EXPORT WRAPPER (Fixed) ---
 export default function ProjectReportPageWrapper() {
   return (
       <div className="min-h-screen bg-white text-slate-900">
-          <React.Suspense fallback={<div className="p-12 flex items-center gap-4"><Loader2 className="animate-spin"/> Loading Report Generator...</div>}>
-              <ProjectReportPage />
-          </React.Suspense>
+          <Suspense fallback={<div className="p-12 flex items-center gap-4"><Loader2 className="animate-spin"/> Loading Report Generator...</div>}>
+              <ReportContent />
+          </Suspense>
       </div>
   );
 }
-import React from "react";
