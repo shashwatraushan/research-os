@@ -7,7 +7,7 @@ import {
   Settings, Plus, Search, LogOut, ChevronRight, Check, 
   Trash2, Pencil, Maximize2, Paperclip, ExternalLink,
   FileText, Clock, AlertCircle, X, Sparkles, Loader2, Bot,
-  ArrowRight, Filter, Users, ArrowUpDown, Sun, Moon, Key, Lock,
+  ArrowRight, Filter,FileDown, Users, ArrowUpDown, Sun, Moon, Key, Lock,
   ClipboardList, Linkedin, Share2, UserIcon, Box, Atom, Brain, Cpu, Rocket, Microscope, Layers, Activity, GitBranch, CheckCircle2, Bug, Bell, Pin, StickyNote, Lightbulb, 
   MoreHorizontal, Link as LinkIcon, CheckSquare, PlayCircle, Zap, Shield, Globe, StopCircle, Archive, ChevronDown, ChevronUp
 } from 'lucide-react';
@@ -971,6 +971,18 @@ const ProjectSelectionScreen = ({
                                               style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}
                                               onClick={(e) => e.stopPropagation()}
                                               >
+                                                <button 
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setActiveMenuId(null);
+                                                  window.open(`/report?projectId=${proj.id}`, '_blank');
+                                                }}
+                                                className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 transition-colors flex items-center gap-2"
+                                                style={{ color: theme.textMain }}
+                                                >
+                                                  <FileDown size={12} /> Export PDF
+                                                  </button>
+                                                  {/* ... Existing Edit and Delete buttons ... */}
                                                 <button
                                                 onClick={(e) => { 
                                                   e.stopPropagation(); 
