@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react"; // <--- Added Suspense import
 import { useSearchParams } from "next/navigation";
 import { 
-  PieChart, Pie, Cell, BarChart, Bar, Tooltip, XAxis, YAxis, ResponsiveContainer 
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer 
 } from 'recharts';
-import { Loader2, Quote, Link as LinkIcon, Calendar, Users, CheckCircle2, Database, Activity } from 'lucide-react';
+import { Loader2, Quote, Link as LinkIcon, Calendar, Users, CheckCircle2, Activity } from 'lucide-react';
 import { GiArchiveResearch } from "react-icons/gi"; 
 
 // --- 1. UTILITIES ---
@@ -111,9 +111,9 @@ const HeatmapViz = ({ data }: { data: any }) => {
     );
 };
 
-// --- 3. MAIN PAGE ---
+// --- 3. CONTENT COMPONENT (Renamed from Default Export) ---
 
-export default function ProjectReportPage() {
+function ReportContent() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
   
@@ -417,3 +417,15 @@ export default function ProjectReportPage() {
     </div>
   );
 }
+
+// --- 4. DEFAULT EXPORT (WRAPPED FOR SUSPENSE) ---
+export default function ProjectReportPageWrapper() {
+  return (
+      <div className="min-h-screen bg-white text-slate-900">
+          <React.Suspense fallback={<div className="p-12 flex items-center gap-4"><Loader2 className="animate-spin"/> Loading Report Generator...</div>}>
+              <ProjectReportPage />
+          </React.Suspense>
+      </div>
+  );
+}
+import React from "react";
