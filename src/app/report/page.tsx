@@ -5,7 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { 
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip
 } from 'recharts';
-import { Loader2, Quote, Link as LinkIcon, Calendar, Users, CheckCircle2, Activity, Check, Database, FlaskConical } from 'lucide-react';
+import { 
+  Loader2, Quote, Link as LinkIcon, Calendar, Users, 
+  CheckCircle2, Activity, Check, Database, FlaskConical 
+} from 'lucide-react';
 import { GiArchiveResearch } from "react-icons/gi"; 
 
 // --- 1. UTILITIES ---
@@ -29,8 +32,10 @@ const calculateCorrelation = (data: any[], key1: string, key2: string) => {
 const parseCSV = (csvText: string) => {
     const lines = csvText.split(/\r\n|\n/).filter(l => l.trim());
     if (lines.length < 2) return null;
+    // Handle CSV quotes robustly
     const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '')); 
     const rawData = lines.slice(1).map(line => {
+        // Regex to split by comma but ignore commas inside quotes
         const vals = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
         const obj: any = {};
         headers.forEach((h, i) => obj[h] = vals[i]?.replace(/^"|"$/g, '') || "");
@@ -38,7 +43,7 @@ const parseCSV = (csvText: string) => {
     });
     
     const numericCols = headers.filter(h => rawData.every(row => !isNaN(Number(row[h])) && row[h] !== ""));
-    const displayCols = numericCols.slice(0, 10); // 10x10 Max
+    const displayCols = numericCols.slice(0, 10); // Limit 10x10
     const matrix = displayCols.map(c1 => displayCols.map(c2 => calculateCorrelation(rawData, c1, c2)));
     
     return { headers, data: rawData, matrix, displayCols };
@@ -51,10 +56,11 @@ const getDoiLink = (doi: string) => {
 
 // --- 2. VISUAL COMPONENTS ---
 
+// Custom Page Component (Not from Recharts)
 const Page = ({ title, subtitle, children, className = "" }: any) => (
   <div className={`w-[297mm] h-[210mm] bg-white text-slate-900 p-[20mm] relative break-after-page overflow-hidden flex flex-col ${className}`}>
      {/* Minimal Header */}
-     <div className="flex justify-between items-start mb-12 border-b border-slate-100 pb-6">
+     <div className="flex justify-between items-start mb-12 border-b border-slate-100 pb-6 shrink-0">
         <div>
             <div className="flex items-center gap-3 text-slate-400 mb-2">
                 <GiArchiveResearch size={18}/>
@@ -75,7 +81,7 @@ const Page = ({ title, subtitle, children, className = "" }: any) => (
      </div>
      
      {/* Minimal Footer */}
-     <div className="absolute bottom-8 left-[20mm] right-[20mm] flex justify-between text-[9px] text-slate-300 font-mono uppercase tracking-widest">
+     <div className="absolute bottom-8 left-[20mm] right-[20mm] flex justify-between text-[9px] text-slate-300 font-mono uppercase tracking-widest mt-auto">
         <span>Confidential Project Data</span>
         <span>{new Date().toLocaleDateString()}</span>
      </div>
@@ -87,16 +93,23 @@ const HeatmapViz = ({ data }: { data: any }) => {
     return (
         <div className="w-full h-full flex flex-col items-center justify-center">
             <div className="grid gap-px" style={{ gridTemplateColumns: `auto repeat(${data.displayCols.length}, 1fr)` }}>
+                 {/* Top Left Blank */}
                  <div></div>
+                 
+                 {/* X-Axis Labels */}
                  {data.displayCols.map((col: string, i: number) => (
-                     <div key={`h-${i}`} className="text-[9px] text-center rotate-[-90deg] origin-bottom translate-y-4 font-medium text-slate-500">{col.substring(0, 15)}</div>
+                     <div key={`h-${i}`} className="text-[9px] text-center rotate-[-90deg] origin-bottom translate-y-4 font-medium text-slate-500">{col.substring(0, 12)}</div>
                  ))}
+
+                 {/* Rows */}
                  {data.matrix.map((row: number[], i: number) => (
-                     <>
-                        <div key={`v-${i}`} className="text-[9px] flex items-center justify-end pr-3 font-medium text-slate-500">{data.displayCols[i].substring(0, 15)}</div>
-                        {row.map((val, j) => {
+                     <React.Fragment key={`r-${i}`}>
+                        {/* Y-Axis Label */}
+                        <div key={`v-${i}`} className="text-[9px] flex items-center justify-end pr-3 font-medium text-slate-500">{data.displayCols[i].substring(0, 12)}</div>
+                        
+                        {/* Cells */}
+                        {row.map((val: number, j: number) => {
                              const opacity = Math.abs(val);
-                             // Sleek Monochrome-ish palette (Blue vs Slate)
                              const color = val > 0 ? `rgba(99, 102, 241, ${opacity})` : `rgba(148, 163, 184, ${opacity})`; 
                              return (
                                  <div key={`${i}-${j}`} className="w-10 h-10 flex items-center justify-center text-[10px] font-medium transition-colors" style={{ backgroundColor: color, color: opacity > 0.5 ? 'white' : 'transparent' }}>
@@ -104,14 +117,14 @@ const HeatmapViz = ({ data }: { data: any }) => {
                                  </div>
                              )
                         })}
-                     </>
+                     </React.Fragment>
                  ))}
             </div>
         </div>
     );
 };
 
-// --- 3. REPORT LOGIC ---
+// --- 3. MAIN LOGIC ---
 
 function ReportContent() {
   const searchParams = useSearchParams();
@@ -129,15 +142,19 @@ function ReportContent() {
 
     const loadPipeline = async () => {
         try {
+            // 1. Fetch Project Data
             setStep("Fetching Project Data...");
             const res = await fetch(`/api/projects/${projectId}`);
             const data = await res.json();
             setProject(data);
 
-            setStep("Processing Datasets...");
+            // 2. Process Datasets (Heatmaps)
+            setStep("Analyzing Datasets...");
             const csvUrls: { id: string, url: string }[] = [];
             data.datasets?.forEach((ds: any) => {
-                if (ds.file?.url?.includes('.csv')) csvUrls.push({ id: ds.id, url: ds.file.url });
+                if (ds.file?.url?.includes('.csv') || ds.file?.name?.endsWith('.csv')) {
+                    csvUrls.push({ id: ds.id, url: ds.file.url });
+                }
             });
             const processedCsv: Record<string, any> = {};
             await Promise.all(csvUrls.map(async (item) => {
@@ -149,28 +166,46 @@ function ReportContent() {
             }));
             setCsvData(processedCsv);
 
-            if (data.description) {
-                setStep("Generating AI Insights...");
+            // 3. Generate AI Summary (Always run this, regardless of description)
+            setStep("Generating AI Insights...");
+            try {
+                const aiRes = await fetch('/api/ai/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // We send the ID so backend can fetch full context (tasks, papers, etc)
+                    body: JSON.stringify({ projectId: data.id }) 
+                });
+                
+                if (!aiRes.ok) throw new Error("AI API Error");
+
+                const aiJson = await aiRes.json();
+                
+                // Robust Parsing Logic
+                const cleanText = aiJson.text.replace(/```json|```/g, '').trim();
+                let parsed;
                 try {
-                    const aiRes = await fetch('/api/ai/generate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ projectId: data.id }) 
-                    });
-                    const aiJson = await aiRes.json();
-                    const cleanJson = aiJson.text.replace(/```json|```/g, '').trim();
-                    const parsed = JSON.parse(cleanJson);
-                    setAiSummary(parsed.summary || data.description);
-                } catch (err) {
-                    setAiSummary(data.description); 
+                    parsed = JSON.parse(cleanText);
+                } catch (e) {
+                    // If AI returns plain text, use it as the summary
+                    parsed = { summary: cleanText };
                 }
+                
+                setAiSummary(parsed.summary || data.description || "No summary available.");
+            } catch (err) {
+                console.warn("AI Generation Failed, using description fallback.");
+                setAiSummary(data.description || "Automated summary unavailable."); 
             }
 
+            // 4. Finish & Print
+            setStep("Finalizing Report...");
             setLoading(false);
-            setTimeout(() => window.print(), 1500);
+            
+            // Small delay to ensure React render completes before print dialog
+            setTimeout(() => window.print(), 1000);
 
         } catch (e) {
             setStep("Error loading report.");
+            setLoading(false);
         }
     };
     loadPipeline();
@@ -193,7 +228,7 @@ function ReportContent() {
       </div>
   );
 
-  if (!project) return <div>Project not found.</div>;
+  if (!project) return <div className="p-10 text-center">Project not found.</div>;
 
   return (
     <div className="bg-slate-50 min-h-screen print:bg-white font-sans">
@@ -225,9 +260,11 @@ function ReportContent() {
                  <Quote size={24} className="text-indigo-400 shrink-0 mt-1"/>
                  <div>
                      <p className="text-lg text-slate-200 font-light leading-relaxed italic">
-                        "{aiSummary || project.description}"
+                        "{aiSummary}"
                      </p>
-                     <p className="text-xs text-indigo-400 mt-4 font-bold uppercase tracking-wider">— AI Generated Abstract</p>
+                     <p className="text-xs text-indigo-400 mt-4 font-bold uppercase tracking-wider flex items-center gap-2">
+                        <FlaskConical size={12}/> AI Generated Abstract
+                     </p>
                  </div>
              </div>
          </div>
@@ -312,7 +349,7 @@ function ReportContent() {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                    {project.papers?.map((p: any, i: number) => (
+                    {project.papers?.map((p: any) => (
                         <tr key={p.id}>
                             <td className="p-4 font-medium text-slate-900">{p.title}</td>
                             <td className="p-4 text-slate-500">{p.authors}</td>
@@ -418,7 +455,7 @@ function ReportContent() {
   );
 }
 
-// --- 4. EXPORT WRAPPER (Fixed) ---
+// --- 4. EXPORT WRAPPER ---
 export default function ProjectReportPageWrapper() {
   return (
       <div className="min-h-screen bg-white text-slate-900">
